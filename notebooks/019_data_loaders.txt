@@ -1,0 +1,63 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+019 — DATA LOADERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS A DATA LOADER?
+  Code that reads a data source and returns LangChain Document objects.
+  Every RAG pipeline starts with a loader.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+Document       → LangChain object: page_content (str) + metadata (dict)
+page_content   → the text the LLM will read
+metadata       → extra info: source, page, title, year, url, etc.
+loader         → class that reads a source and returns list[Document]
+chunk          → a smaller piece of a document after splitting
+
+─────────────────────────────────────────
+FOUR LOADERS COVERED
+─────────────────────────────────────────
+
+1. SQLITE DATABASE
+   sqlite3 → fetchall() → build Document per row
+   metadata: id, title, year, venue, citations, topic
+   key use: structured records, filterable by SQL
+
+2. PDF (PyPDFLoader)
+   from langchain_community.document_loaders import PyPDFLoader
+   loader.load() → one Document per page
+   then split with RecursiveCharacterTextSplitter(chunk_size=800)
+   key use: research papers, product docs, reports
+
+3. YOUTUBE TRANSCRIPT (youtube_transcript_api)
+   YouTubeTranscriptApi.list_transcripts(video_id)
+   .find_transcript(['en']).fetch() → list of {start, duration, text}
+   merge into 60-second windows → list[Document]
+   metadata: video_id, url, start_sec, end_sec
+   key use: video lectures, podcasts, talks
+
+4. JSON DATASET
+   json.load() → iterate items → build Document per item
+   page_content = "Q: ...\nA: ..."
+   metadata: id, topic, difficulty, tags
+   key use: QA pairs, eval sets, FAQs, knowledge bases
+
+─────────────────────────────────────────
+KEY NUMBERS
+─────────────────────────────────────────
+
+PDF chunk_size     → 800 chars, overlap 100
+YouTube window     → 60 seconds per chunk
+Semantic search k  → 3 results for QA, 2 for transcripts
+JSON in notebook   → 12 QA pairs, 5 topics, 3 difficulty levels
+
+─────────────────────────────────────────
+RULE OF THUMB
+─────────────────────────────────────────
+
+Always add source to metadata → tells LLM where info came from.
+For YouTube: merge short entries into 60s windows before indexing.
+For PDFs: split pages → smaller chunks work better than full pages.
+For DB: load with SQL filter → don't load the whole table if you only need a subset.

@@ -1,0 +1,207 @@
+[
+  {
+    "id": "rag_001",
+    "question": "What is Retrieval-Augmented Generation?",
+    "ground_truth": "RAG is a technique that combines a retrieval system with an LLM generator. The retriever fetches relevant documents; the LLM conditions its answer on them, reducing hallucination and keeping knowledge current.",
+    "topic": "RAG Basics",
+    "difficulty": "beginner",
+    "tags": [
+      "RAG",
+      "retrieval",
+      "LLM"
+    ],
+    "source": "synthetic",
+    "metadata": {
+      "created": "2025-01-01",
+      "version": "1.0"
+    }
+  },
+  {
+    "id": "rag_002",
+    "question": "What is the difference between dense and sparse retrieval?",
+    "ground_truth": "Dense retrieval uses neural embeddings (e.g. all-MiniLM-L6-v2) and cosine similarity to find semantically similar documents. Sparse retrieval uses term-frequency methods like BM25 to match keyword occurrences. Hybrid retrieval combines both.",
+    "topic": "Retrieval",
+    "difficulty": "intermediate",
+    "tags": [
+      "BM25",
+      "dense",
+      "sparse",
+      "hybrid"
+    ],
+    "source": "synthetic",
+    "metadata": {
+      "created": "2025-01-01",
+      "version": "1.0"
+    }
+  },
+  {
+    "id": "rag_003",
+    "question": "What is HyDE (Hypothetical Document Embeddings)?",
+    "ground_truth": "HyDE generates a hypothetical answer to the query using an LLM, embeds that answer, and uses the embedding to search the vector store. This bridges the vocabulary gap between short queries and longer documents.",
+    "topic": "Advanced RAG",
+    "difficulty": "intermediate",
+    "tags": [
+      "HyDE",
+      "query expansion",
+      "embeddings"
+    ],
+    "source": "synthetic",
+    "metadata": {
+      "created": "2025-01-02",
+      "version": "1.0"
+    }
+  },
+  {
+    "id": "rag_004",
+    "question": "How does a cross-encoder reranker improve RAG?",
+    "ground_truth": "A cross-encoder takes (query, document) pairs and scores their relevance jointly rather than independently. After an initial retrieval of 20 candidates, the reranker rescores all pairs and keeps only the top-5, significantly improving precision.",
+    "topic": "Advanced RAG",
+    "difficulty": "intermediate",
+    "tags": [
+      "reranker",
+      "cross-encoder",
+      "retrieval"
+    ],
+    "source": "synthetic",
+    "metadata": {
+      "created": "2025-01-02",
+      "version": "1.0"
+    }
+  },
+  {
+    "id": "rag_005",
+    "question": "What is Self-RAG?",
+    "ground_truth": "Self-RAG is a LangGraph workflow where the LLM grades retrieved documents for relevance before generating. If documents are irrelevant, it refines the query and re-retrieves. After generation, it grades the answer for hallucination.",
+    "topic": "Advanced RAG",
+    "difficulty": "advanced",
+    "tags": [
+      "Self-RAG",
+      "LangGraph",
+      "grading"
+    ],
+    "source": "synthetic",
+    "metadata": {
+      "created": "2025-01-03",
+      "version": "1.0"
+    }
+  },
+  {
+    "id": "rag_006",
+    "question": "What is RAPTOR?",
+    "ground_truth": "RAPTOR builds a multi-level summary tree: leaf nodes are document chunks, which are clustered and summarised into mid-level nodes, then a final meta-summary. All levels are indexed, enabling retrieval at multiple granularities.",
+    "topic": "Advanced RAG",
+    "difficulty": "advanced",
+    "tags": [
+      "RAPTOR",
+      "summarization",
+      "tree"
+    ],
+    "source": "synthetic",
+    "metadata": {
+      "created": "2025-01-03",
+      "version": "1.0"
+    }
+  },
+  {
+    "id": "rag_007",
+    "question": "What is CRAG (Corrective RAG)?",
+    "ground_truth": "CRAG grades retrieved documents before generation. If documents are 'correct' it generates normally. If 'incorrect' it falls back to a web search. If 'ambiguous' it combines both. This self-corrects retrieval failures.",
+    "topic": "Advanced RAG",
+    "difficulty": "advanced",
+    "tags": [
+      "CRAG",
+      "corrective",
+      "web search"
+    ],
+    "source": "synthetic",
+    "metadata": {
+      "created": "2025-01-04",
+      "version": "1.0"
+    }
+  },
+  {
+    "id": "rag_008",
+    "question": "What is RRF (Reciprocal Rank Fusion)?",
+    "ground_truth": "RRF merges ranked lists from multiple retrievers (e.g. dense + BM25) using score = 1/(k + rank) where k=60. Higher-ranked results get higher scores. Scores are summed across retrievers to produce a final merged ranking.",
+    "topic": "Retrieval",
+    "difficulty": "intermediate",
+    "tags": [
+      "RRF",
+      "hybrid",
+      "fusion"
+    ],
+    "source": "synthetic",
+    "metadata": {
+      "created": "2025-01-04",
+      "version": "1.0"
+    }
+  },
+  {
+    "id": "rag_009",
+    "question": "What metrics does RAGAS use to evaluate RAG?",
+    "ground_truth": "RAGAS measures: Faithfulness (are answers grounded in context?), Answer Relevancy (does the answer address the question?), Context Recall (was all needed info retrieved?), and Context Precision (were retrieved chunks relevant?).",
+    "topic": "Evaluation",
+    "difficulty": "intermediate",
+    "tags": [
+      "RAGAS",
+      "evaluation",
+      "faithfulness"
+    ],
+    "source": "synthetic",
+    "metadata": {
+      "created": "2025-01-05",
+      "version": "1.0"
+    }
+  },
+  {
+    "id": "rag_010",
+    "question": "How does semantic caching reduce LLM costs?",
+    "ground_truth": "Semantic caching stores (query_embedding, answer) pairs. For each new query, it checks cosine similarity against cached queries. If similarity >= threshold (e.g. 0.92), it returns the cached answer without calling the LLM, saving cost.",
+    "topic": "Production",
+    "difficulty": "intermediate",
+    "tags": [
+      "cache",
+      "semantic",
+      "cost"
+    ],
+    "source": "synthetic",
+    "metadata": {
+      "created": "2025-01-05",
+      "version": "1.0"
+    }
+  },
+  {
+    "id": "rag_011",
+    "question": "What is hallucination in LLM outputs?",
+    "ground_truth": "Hallucination is when an LLM generates facts not present in the retrieved context. It sounds confident but is made up. NLI cross-encoders detect this by scoring P(entailment) between the context and the answer.",
+    "topic": "Evaluation",
+    "difficulty": "beginner",
+    "tags": [
+      "hallucination",
+      "NLI",
+      "detection"
+    ],
+    "source": "synthetic",
+    "metadata": {
+      "created": "2025-01-06",
+      "version": "1.0"
+    }
+  },
+  {
+    "id": "rag_012",
+    "question": "What is parent-child chunking?",
+    "ground_truth": "Parent-child chunking indexes small child chunks (300 chars) for precise retrieval but returns the larger parent chunk (1500 chars) to the LLM for full context. This gives precise matching with rich generation context.",
+    "topic": "Ingestion",
+    "difficulty": "intermediate",
+    "tags": [
+      "chunking",
+      "parent-child",
+      "retrieval"
+    ],
+    "source": "synthetic",
+    "metadata": {
+      "created": "2025-01-06",
+      "version": "1.0"
+    }
+  }
+]
