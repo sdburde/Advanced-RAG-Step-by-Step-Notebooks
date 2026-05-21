@@ -1,0 +1,55 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+007 — BASIC RAG PIPELINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS RAG?
+  Retrieval-Augmented Generation.
+  LLM answers questions using documents you provide, not just its training.
+  Stops hallucination. Keeps answers up to date. Adds citations.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+RAG           → retrieve documents + generate answer from them
+retriever     → the component that searches and returns relevant chunks
+generator     → the LLM that reads the chunks and writes the answer
+context       → the retrieved chunks pasted into the prompt
+prompt        → the full input to the LLM (system msg + context + question)
+chain         → a sequence of steps (retrieve → format → prompt → LLM → parse)
+grounding     → the answer is based on real retrieved text, not memory
+citation      → telling the user which source chunk the answer came from
+MMR           → Maximal Marginal Relevance. Retrieves diverse results.
+               Avoids returning 5 nearly identical chunks.
+
+─────────────────────────────────────────
+THE 6-STEP PIPELINE
+─────────────────────────────────────────
+
+1. LOAD     → read raw documents (PDF, web, text files)
+2. SPLIT    → chunk them (see notebook 001)
+3. EMBED    → convert each chunk to a vector with an embedding model
+4. STORE    → save vectors in a vector DB (see notebook 004)
+5. RETRIEVE → on user query: embed query → find top-k similar chunks
+6. GENERATE → paste chunks into prompt → LLM writes the answer
+
+─────────────────────────────────────────
+MMR RETRIEVAL PARAMETERS
+─────────────────────────────────────────
+
+k           = how many docs to return to the LLM (e.g. 5)
+fetch_k     = how many candidates to fetch before MMR filtering (e.g. 20)
+lambda_mult = diversity vs relevance balance (0=max diversity, 1=max relevance)
+              0.7 is a good default (70% relevant, 30% diverse)
+
+─────────────────────────────────────────
+PROMPT STRUCTURE
+─────────────────────────────────────────
+
+System: You are a helpful assistant.
+        Answer ONLY from the context below.
+        If not in context, say "I don't know".
+
+Context:
+  [Source: doc1] chunk text...
+  [Source: doc2] chunk text...

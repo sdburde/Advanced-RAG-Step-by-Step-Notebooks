@@ -1,0 +1,62 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+008 — HyDE: HYPOTHETICAL DOCUMENT EMBEDDINGS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+THE PROBLEM
+  Short query:  "How does attention work?"  (5 words, vague embedding)
+  Documents:    Long paragraphs about attention (different embedding space)
+  Gap:          Query embedding ≠ Document embedding → poor retrieval
+
+THE SOLUTION (HyDE)
+  Ask the LLM to write a fake answer first.
+  Embed the fake answer (it looks like a real document).
+  Search with the fake answer embedding → much better match.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+HyDE              → Hypothetical Document Embeddings
+hypothetical doc  → fake answer written by the LLM before retrieval
+query expansion   → making a short query richer/longer before searching
+semantic gap      → difference between how queries and documents embed
+in-distribution   → embedding that looks like a real document
+                    (hypothetical answer is in-distribution; raw query is not)
+
+─────────────────────────────────────────
+HOW IT WORKS (4 STEPS)
+─────────────────────────────────────────
+
+1. User asks: "How does attention work in transformers?"
+2. LLM writes a fake answer (3-4 sentences) WITHOUT retrieval
+3. Embed the fake answer → get a rich, document-like vector
+4. Search the vector DB using that vector → retrieve real docs
+5. Use real docs as context → LLM writes the final answer
+
+─────────────────────────────────────────
+LANGGRAPH FLOW
+─────────────────────────────────────────
+
+[question]
+    ↓
+generate_hypothesis  (LLM writes fake answer)
+    ↓
+retrieve             (search with fake answer embedding)
+    ↓
+gen_answer           (LLM answers using real retrieved docs)
+    ↓
+[final answer]
+
+─────────────────────────────────────────
+COST vs BENEFIT
+─────────────────────────────────────────
+
+Cost:    1 extra LLM call per query (cheap with fast model)
+Benefit: 5-15% better recall on typical RAG benchmarks
+
+─────────────────────────────────────────
+RULE OF THUMB
+─────────────────────────────────────────
+
+Use HyDE when queries are short, vague, or very different from document style.
+Especially good for technical docs queried by non-technical users.

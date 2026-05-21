@@ -1,0 +1,76 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+015 — MULTI-AGENT COORDINATION (LANGGRAPH)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS MULTI-AGENT?
+  Multiple LLM agents, each specialised in one domain.
+  A supervisor decides which specialist to ask.
+  A synthesizer combines the specialist's answer into the final output.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+multi-agent   → multiple LLM agents working together on one task
+supervisor    → the routing agent. Reads the query, picks the right specialist.
+specialist    → an agent with its own knowledge base and system prompt
+               e.g. ML expert, NLP expert, Legal expert
+synthesizer   → the final agent that polishes/combines the specialist's draft
+orchestration → managing which agent does what and in what order
+domain        → the subject area a specialist knows about (ML, NLP, Finance...)
+handoff       → passing the task from supervisor to specialist (or agent to agent)
+draft         → the specialist's raw answer before synthesis
+final answer  → the polished answer after synthesis
+
+─────────────────────────────────────────
+ARCHITECTURE
+─────────────────────────────────────────
+
+              [User Query]
+                   ↓
+            [Supervisor]  ← reads query, decides route
+           /     |      \
+      [ML]    [NLP]   [General]   ← each has own retriever + prompt
+           \     |      /
+            [Synthesizer]          ← refines the draft
+                   ↓
+            [Final Answer]
+
+─────────────────────────────────────────
+SUPERVISOR PROMPT PATTERN
+─────────────────────────────────────────
+
+"Route to the best specialist.
+ Reply with ONLY one word: ml / nlp / general"
+
+─────────────────────────────────────────
+WHY MULTIPLE AGENTS?
+─────────────────────────────────────────
+
+One agent with everything → confused, mediocre at everything
+Specialists → each is deeply tuned to its domain
+              each has its own retriever over domain docs
+              each has a domain-specific system prompt
+
+─────────────────────────────────────────
+SCALING THE PATTERN
+─────────────────────────────────────────
+
+Add a new specialist → add one new node + one new retriever
+No changes to other specialists or the supervisor logic
+Supervisor automatically routes to the new specialist
+
+─────────────────────────────────────────
+DIFFERENCE FROM REACT AGENT
+─────────────────────────────────────────
+
+ReAct agent    → ONE LLM calls tools in a loop
+Multi-agent    → MULTIPLE LLMs, each a specialist, coordinated by a supervisor
+
+─────────────────────────────────────────
+RULE OF THUMB
+─────────────────────────────────────────
+
+Use multi-agent when your system covers 3+ distinct domains.
+Keep each specialist narrow: better system prompt + better retrieval = better answers.
+Always add a synthesizer — raw specialist output can be inconsistent in tone.

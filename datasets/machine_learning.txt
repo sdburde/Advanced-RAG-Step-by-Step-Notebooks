@@ -1,0 +1,111 @@
+Machine Learning
+
+Machine learning (ML) is a type of artificial intelligence (AI) that allows software applications
+to become more accurate at predicting outcomes without being explicitly programmed to do so.
+Machine learning algorithms use historical data as input to predict new output values.
+
+Machine learning is closely related to computational statistics, which focuses on making
+predictions using computers, but not all machine learning is statistical learning. The study of
+mathematical optimization delivers methods, theory and application domains to the field of
+machine learning. Data mining is a related field of study, focusing on exploratory data analysis
+through unsupervised learning. Some implementations of machine learning use data and neural
+networks in a way that mimics the working of a biological brain.
+
+Supervised Learning
+
+Supervised learning algorithms are trained using labeled training data. The algorithm learns a
+mapping function from the input variables (X) to the output variable (Y). The goal is to
+approximate the mapping function so well that when you have new input data (X), you can predict
+the output variables (Y) for that data.
+
+Classification is a type of supervised learning where the output is a category such as "spam"
+or "not spam", or "dog" or "cat". Regression is a type of supervised learning where the output
+is a real or continuous value such as "house price" or "temperature".
+
+Common supervised learning algorithms include:
+- Linear regression: models the relationship between input and output variables as linear
+- Logistic regression: used for binary classification problems
+- Decision trees: tree-like models that split data based on feature values
+- Random forests: ensemble of decision trees for improved accuracy
+- Support vector machines (SVM): finds a hyperplane that separates classes
+- Neural networks: layered architectures inspired by the brain
+
+Unsupervised Learning
+
+Unsupervised learning uses unlabeled data. The system tries to learn the patterns and structure
+from the data without any labels. The key tasks are:
+
+Clustering: grouping similar data points together. K-means clustering partitions data into K
+clusters where each observation belongs to the cluster with the nearest mean.
+
+Dimensionality reduction: reducing the number of features while preserving important information.
+Principal Component Analysis (PCA) is a technique that transforms data into a set of orthogonal
+components that capture the most variance.
+
+Generative models: learning the underlying distribution of data to generate new samples.
+Variational autoencoders (VAE) and Generative Adversarial Networks (GAN) are popular approaches.
+
+Reinforcement Learning
+
+Reinforcement learning (RL) is about learning to make decisions by interacting with an
+environment. An agent takes actions, observes the results, and learns to maximize cumulative
+rewards. Key concepts include:
+
+The Markov Decision Process (MDP) is the mathematical framework for RL. It consists of:
+- States (S): the possible situations the agent can be in
+- Actions (A): what the agent can do
+- Transition function: how actions change the state
+- Reward function: what the agent gets for each action
+- Policy: the agent's strategy for choosing actions
+
+Q-learning is a model-free RL algorithm that learns the value of actions in states. Deep Q-Network
+(DQN) combines Q-learning with deep neural networks to handle high-dimensional state spaces.
+
+Policy gradient methods directly optimize the policy rather than learning a value function.
+REINFORCE, PPO (Proximal Policy Optimization), and A3C are popular policy gradient algorithms.
+
+Gradient Descent and Optimization
+
+Gradient descent is an optimization algorithm used to minimize the loss function in machine
+learning. It iteratively adjusts the model parameters in the direction of the negative gradient
+of the loss function with respect to those parameters.
+
+Stochastic gradient descent (SGD) updates parameters using the gradient computed from a single
+training example or a small batch, making it faster but noisier than batch gradient descent.
+
+Adaptive learning rate methods like Adam, Adagrad, and RMSprop automatically adjust the
+learning rate for each parameter, leading to faster convergence.
+
+Backpropagation is the algorithm used to compute gradients in neural networks. It applies the
+chain rule of calculus to propagate error signals backwards through the network, computing
+how much each weight contributed to the overall error.
+
+The vanishing gradient problem occurs when gradients become very small as they are propagated
+back through many layers, making it difficult to train deep networks. Solutions include ReLU
+activation functions, batch normalization, and residual connections.
+
+Bias-Variance Tradeoff
+
+Bias is the error introduced by approximating a complex problem with a simpler model.
+High bias means the model is too simple (underfitting).
+
+Variance is the sensitivity of the model to fluctuations in the training data.
+High variance means the model is too complex (overfitting).
+
+Regularization techniques like L1 (Lasso), L2 (Ridge), and dropout help reduce overfitting by
+penalizing model complexity or randomly dropping neurons during training.
+
+Cross-validation is a technique to estimate model performance on unseen data by splitting the
+training data into subsets and training/evaluating on different combinations.
+
+Evaluation Metrics
+
+For classification: accuracy, precision, recall, F1 score, ROC-AUC, confusion matrix.
+For regression: mean squared error (MSE), root mean squared error (RMSE), R-squared, MAE.
+For clustering: silhouette score, Davies-Bouldin index, inertia.
+
+Transfer Learning
+
+Transfer learning is a machine learning technique where a model trained on one task is
+reused as the starting point for a model on a second task. Fine-tuning a pretrained model
+like BERT or ResNet on a specific task is a common application of transfer learning.

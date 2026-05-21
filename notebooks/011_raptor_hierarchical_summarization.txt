@@ -1,0 +1,68 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+011 — RAPTOR: HIERARCHICAL SUMMARIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+THE PROBLEM
+  "Summarise the whole document" → basic RAG retrieves a random chunk.
+  Big-picture questions need big-picture context, not a single small chunk.
+
+THE SOLUTION (RAPTOR)
+  Build a TREE of summaries at multiple levels.
+  Index everything: leaves + summaries.
+  A broad question hits the summary; a specific question hits the leaf.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+RAPTOR        → Recursive Abstractive Processing for Tree-Organized Retrieval
+leaf chunk    → Level 0. Original small text chunks from the document.
+cluster       → a group of similar leaf chunks grouped by embedding similarity
+summary       → Level 1+. LLM-written summary of a cluster of chunks.
+meta-summary  → Level 2. Summary of the level-1 summaries.
+tree          → the full hierarchy: leaves → L1 summaries → L2 meta-summary
+multi-level   → retrieval searches ALL levels at once
+granularity   → how detailed: leaves=fine, meta-summary=coarse
+
+─────────────────────────────────────────
+THE THREE LEVELS
+─────────────────────────────────────────
+
+Level 0 (leaves)      → original chunks (~50-100 nodes)
+Level 1 (summaries)   → one summary per cluster of similar leaves (~10 nodes)
+Level 2 (meta-summary)→ one summary of all level-1 summaries (1 node)
+
+─────────────────────────────────────────
+HOW RETRIEVAL WORKS
+─────────────────────────────────────────
+
+All levels are indexed in the SAME vector store.
+A single query searches across all levels.
+Broad question → L2 meta-summary scores highest
+Specific question → L0 leaf chunk scores highest
+Mixed question → gets both
+
+─────────────────────────────────────────
+HOW CLUSTERS ARE BUILT
+─────────────────────────────────────────
+
+1. Embed all leaf chunks
+2. Group by cosine similarity (threshold ~0.75)
+3. Chunks in the same group = one cluster
+4. Ask LLM to summarise the cluster → Level 1 node
+5. Repeat at Level 2
+
+─────────────────────────────────────────
+COST
+─────────────────────────────────────────
+
+Summarisation cost is paid ONCE at ingest time.
+Retrieval is normal vector search → no extra latency.
+
+─────────────────────────────────────────
+RULE OF THUMB
+─────────────────────────────────────────
+
+Use RAPTOR for: long reports, books, multi-chapter docs.
+Skip it for: short Q&A over <100 chunks (basic RAG is enough).
+RAPTOR shows ~20% improvement on long-document QA benchmarks.

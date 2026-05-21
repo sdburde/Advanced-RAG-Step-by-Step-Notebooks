@@ -1,0 +1,78 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+018 — HALLUCINATION DETECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS HALLUCINATION?
+  The LLM writes something that is not in the retrieved context.
+  It sounds confident but is simply made up.
+  Most dangerous failure mode in RAG systems.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+hallucination    → LLM generating facts not supported by the context
+grounded         → every claim in the answer is backed by the context
+NLI              → Natural Language Inference. A model that checks if a
+                   text A implies, contradicts, or is neutral to text B.
+entailment       → context SUPPORTS the answer (good → low hallucination risk)
+contradiction    → context says something DIFFERENT from the answer (hallucination)
+neutral          → context neither supports nor contradicts (unsupported claim)
+hallucination risk → 1 - entailment_score. Higher = more likely hallucinated.
+sentence-level   → checking each sentence of the answer separately
+self-critique    → ask the LLM to check its own answer for unsupported claims
+NLI model        → cross-encoder model fine-tuned to output entailment/neutral/contradiction
+threshold        → hallucination_risk > 0.4 → regenerate with stricter prompt
+
+─────────────────────────────────────────
+THREE DETECTION METHODS
+─────────────────────────────────────────
+
+1. NLI CROSS-ENCODER (fastest, best for production gating)
+   Feed (context, answer) to NLI model
+   Get back: P(entailment), P(neutral), P(contradiction)
+   hallucination_risk = 1 - P(entailment)
+   Risk > threshold → reject answer
+
+2. LLM SELF-CRITIQUE (most accurate, slower)
+   Ask LLM: "Is this claim supported by the context? supported/unsupported/contradicted"
+   Check sentence by sentence
+   Flag any unsupported sentences
+
+3. SENTENCE-LEVEL NLI (detailed audit trail)
+   Run NLI on each sentence of the answer vs the context
+   Mark each sentence: ✓ supported  ?  unsupported  ✗ contradicted
+
+─────────────────────────────────────────
+NLI MODEL TO USE
+─────────────────────────────────────────
+
+cross-encoder/nli-deberta-v3-small    → small, fast (~100MB)
+cross-encoder/nli-deberta-v3-base     → more accurate (~400MB)
+
+─────────────────────────────────────────
+THE SAFE RAG PATTERN
+─────────────────────────────────────────
+
+1. Generate answer from context
+2. Run NLI hallucination check
+3a. Risk <= 0.4 → return answer to user
+3b. Risk > 0.4  → regenerate with stricter prompt ("ONLY use exact quotes")
+                   then re-check and return
+
+─────────────────────────────────────────
+LATENCY GUIDE
+─────────────────────────────────────────
+
+NLI check (full answer)   → ~50ms  on CPU
+LLM self-critique         → ~2s
+Sentence-level NLI (5 sentences) → ~200ms
+
+─────────────────────────────────────────
+RULE OF THUMB
+─────────────────────────────────────────
+
+Always gate on NLI in production. 50ms is worth catching hallucination.
+Log every rejected/regenerated answer → reveals retrieval gaps.
+threshold = 0.4: strict enough to catch most hallucinations,
+                  loose enough not to reject well-grounded partial answers.

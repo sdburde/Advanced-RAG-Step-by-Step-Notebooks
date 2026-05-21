@@ -1,0 +1,55 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+002 — METADATA EXTRACTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS METADATA?
+  Extra facts about a chunk: who, when, what topic, which section.
+  Stored alongside the text. Used to filter results before or after search.
+  Example: a chunk tagged date=2023 can be filtered out for older queries.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+metadata      → structured facts attached to a document chunk
+entity        → named thing in text (person, org, place, product)
+NER           → Named Entity Recognition — finding entities automatically
+structured output → making the LLM reply in JSON/schema, not free text
+Pydantic      → Python library that defines and validates a JSON schema
+filter        → keep only chunks whose metadata matches a condition
+               e.g. keep chunks where topic == "healthcare"
+
+─────────────────────────────────────────
+WHAT TO EXTRACT
+─────────────────────────────────────────
+
+entities      → people, companies, places mentioned in the chunk
+dates         → any time references ("Q3 2023", "last year")
+topics        → 2-5 keyword tags describing the chunk
+summary       → one sentence summary of the chunk
+section       → the heading this chunk belongs to
+
+─────────────────────────────────────────
+HOW IT WORKS
+─────────────────────────────────────────
+
+1. Define a Pydantic schema (what fields you want)
+2. Build a prompt: "extract these fields from the text, return JSON"
+3. Send chunk to LLM → get back structured JSON
+4. Attach the JSON as metadata to the Document object
+5. Store in vector DB with the chunk
+
+─────────────────────────────────────────
+WHY IT MATTERS
+─────────────────────────────────────────
+
+Without metadata → retrieve top-5 by similarity only
+With metadata    → retrieve top-5 by similarity AND filter by date/topic
+                   → much more precise answers
+
+─────────────────────────────────────────
+RULE OF THUMB
+─────────────────────────────────────────
+
+Extract metadata once at ingest time. It is cheap then, valuable forever.
+Always extract: entities, topics, section heading, one-line summary.

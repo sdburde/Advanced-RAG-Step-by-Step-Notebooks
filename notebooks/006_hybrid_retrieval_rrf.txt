@@ -1,0 +1,67 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+006 — HYBRID RETRIEVAL + RRF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS HYBRID RETRIEVAL?
+  Run dense search AND sparse (BM25) search at the same time.
+  Merge the two ranked lists into one final ranked list.
+  Result: beats either method alone on almost every benchmark.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+dense retrieval  → search by embedding similarity (semantic meaning)
+sparse retrieval → search by keyword frequency (BM25)
+hybrid           → combine dense + sparse results
+RRF              → Reciprocal Rank Fusion. The formula to merge lists.
+rank fusion      → turning multiple ranked lists into one combined list
+EnsembleRetriever → LangChain class that does hybrid + RRF automatically
+weight           → how much to trust each retriever (e.g. 60% dense, 40% sparse)
+
+─────────────────────────────────────────
+RRF FORMULA
+─────────────────────────────────────────
+
+score(document) = Σ  1 / (k + rank_i)
+
+  k    = 60  (standard constant, smooths out top-rank dominance)
+  rank = position of this document in one retriever's list (1 = top)
+  Σ    = sum across all retrievers
+
+EXAMPLE:
+  Doc A is rank 1 in dense,  rank 5 in sparse
+  Doc B is rank 3 in dense,  rank 1 in sparse
+  k = 60
+
+  Doc A score = 1/(60+1) + 1/(60+5) = 0.0164 + 0.0154 = 0.0318
+  Doc B score = 1/(60+3) + 1/(60+1) = 0.0159 + 0.0164 = 0.0323
+
+  → Doc B wins (appears top in both lists, just not first)
+
+─────────────────────────────────────────
+WHY k=60?
+─────────────────────────────────────────
+
+k=60 makes rank 1 ≈ 1.6% weight and rank 60 ≈ 0.83% weight.
+Not too dominant at the top. Empirically the best constant.
+
+─────────────────────────────────────────
+HOW TO USE IN LANGCHAIN
+─────────────────────────────────────────
+
+from langchain.retrievers import EnsembleRetriever
+
+ensemble = EnsembleRetriever(
+    retrievers=[dense_retriever, bm25_retriever],
+    weights=[0.6, 0.4]   # 60% trust dense, 40% trust BM25
+)
+results = ensemble.invoke("your query")
+
+─────────────────────────────────────────
+RULE OF THUMB
+─────────────────────────────────────────
+
+Default weights: 0.6 dense + 0.4 sparse.
+Tune on your domain's eval set. In code-heavy domains, raise sparse weight.
+Hybrid retrieval is the single highest-ROI upgrade to basic RAG.

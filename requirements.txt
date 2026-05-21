@@ -1,0 +1,45 @@
+# ── LangChain core stack ──────────────────────────────────────
+langchain==0.3.30
+langchain-core==0.3.86
+langchain-community==0.3.31
+langchain-text-splitters==0.3.11
+
+# ── LangChain integrations ────────────────────────────────────
+langchain-groq==0.2.2           # Groq LLM provider
+langchain-huggingface==0.1.2    # HuggingFace embeddings
+langchain-chroma==0.1.4         # ChromaDB vector store
+
+# ── LangGraph (agentic orchestration) ────────────────────────
+langgraph==0.2.61
+langgraph-prebuilt==1.0.8       # create_react_agent helper
+
+# ── LLM providers ─────────────────────────────────────────────
+groq==0.13.1                    # Groq API client
+
+# ── Embeddings & retrieval ────────────────────────────────────
+sentence-transformers==3.3.1    # HuggingFace embeddings + cross-encoder reranker
+transformers==4.57.6            # underlying HuggingFace models
+tiktoken==0.12.0                # token counting
+
+# ── Vector stores ─────────────────────────────────────────────
+faiss-cpu==1.13.2               # FAISS in-memory ANN search
+chromadb==0.5.23                # persistent vector DB with metadata filtering
+
+# ── Sparse retrieval ──────────────────────────────────────────
+rank-bm25==0.2.2                # BM25 full-text retrieval (notebooks 005, 006)
+
+# ── RAG evaluation ────────────────────────────────────────────
+ragas==0.4.3                    # faithfulness, answer_relevancy, context metrics
+datasets==4.8.4                 # HuggingFace Dataset used by ragas.evaluate()
+
+# ── Data & utilities ──────────────────────────────────────────
+numpy==2.2.1
+pandas==2.2.3
+requests==2.33.1                # download dataset files
+python-dotenv==1.0.1            # load GROQ_API_KEY from .env
+pydantic==2.12.5                # structured output schemas (notebook 002)
+
+# ── Notebook tooling ──────────────────────────────────────────
+nbformat==5.10.4                # read/write .ipynb files (create_notebooks.py)
+jupyter                         # run notebooks (jupyter nbconvert / jupyter lab)
+nbconvert                       # execute notebooks non-interactively

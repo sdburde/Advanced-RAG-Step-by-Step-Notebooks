@@ -1,0 +1,72 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+017 — RAGAS EVALUATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS RAGAS?
+  Retrieval-Augmented Generation Assessment.
+  A framework that automatically scores your RAG pipeline.
+  Treats evaluation like a unit test: run it on every change.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+RAGAS         → evaluation framework for RAG pipelines
+eval dataset  → a set of (question, ground_truth, answer, contexts) tuples
+ground_truth  → the correct answer you wrote yourself (the gold standard)
+metric        → a number 0-1 that measures one aspect of RAG quality
+LLM-as-judge  → using an LLM to score answers (RAGAS uses this internally)
+
+─────────────────────────────────────────
+THE FOUR METRICS
+─────────────────────────────────────────
+
+1. FAITHFULNESS (most important)
+   "Does the answer only use facts from the retrieved context?"
+   Score 0 = pure hallucination. Score 1 = every claim is in the context.
+   Threshold: > 0.85
+
+2. ANSWER RELEVANCY
+   "Does the answer actually address the question?"
+   Low score = answer is off-topic or evasive.
+   Threshold: > 0.80
+
+3. CONTEXT RECALL
+   "Was all the information needed to answer correctly retrieved?"
+   Low score = retrieval missed important chunks.
+   Threshold: > 0.75
+
+4. CONTEXT PRECISION
+   "Were the retrieved chunks relevant? No noise?"
+   Low score = too many irrelevant chunks retrieved.
+   Threshold: > 0.70
+
+─────────────────────────────────────────
+COLUMN NAMES IN RAGAS 0.4.x
+─────────────────────────────────────────
+
+Input to evaluate():         Output DataFrame:
+  question       →             user_input
+  answer         →             response
+  contexts       →             retrieved_contexts
+  ground_truth   →             reference
+  + metric scores (faithfulness, ...)
+
+─────────────────────────────────────────
+WHAT TO DO WITH LOW SCORES
+─────────────────────────────────────────
+
+Low faithfulness   → LLM is hallucinating. Tighten system prompt.
+                     "Answer ONLY from context. Never add information."
+Low answer relevancy → prompt is vague. Be more explicit about format.
+Low context recall → retrieval misses key chunks. Improve chunking or embedding.
+Low context precision → too many irrelevant chunks. Reduce k or add reranker.
+
+─────────────────────────────────────────
+RULE OF THUMB
+─────────────────────────────────────────
+
+Run RAGAS on 3-5 samples per change → fast CI check.
+Run on 50+ samples before shipping → thorough evaluation.
+Use faithfulness as your single most important metric.
+Start with faithfulness only (fastest to compute), add others later.

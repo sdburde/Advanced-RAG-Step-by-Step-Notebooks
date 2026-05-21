@@ -1,0 +1,103 @@
+Retrieval-Augmented Generation (RAG)
+
+Retrieval-Augmented Generation (RAG) is a hybrid AI architecture that combines information
+retrieval with text generation. Rather than relying solely on knowledge stored in model
+parameters, RAG systems retrieve relevant documents from an external knowledge base and
+use them as context for generating responses.
+
+RAG was introduced by Lewis et al. (2020) as a way to give language models access to
+up-to-date information and verifiable sources, addressing key limitations of parametric
+(weights-only) language models: knowledge staleness, hallucination, and lack of attribution.
+
+Core RAG Pipeline
+
+A standard RAG pipeline consists of three stages:
+
+1. Ingestion: Documents are loaded, split into chunks, embedded into vectors, and stored in
+   a vector database. The chunk size and overlap are critical hyperparameters.
+
+2. Retrieval: Given a user query, the query is embedded and the most similar document chunks
+   are retrieved from the vector database using approximate nearest neighbor (ANN) search.
+
+3. Generation: The retrieved chunks are added to the prompt as context, and the language model
+   generates a response based on both the query and the retrieved context.
+
+Document Chunking Strategies
+
+The quality of RAG depends heavily on how documents are chunked:
+- Fixed-size chunking: split at character boundaries; simple but ignores semantics
+- Recursive character splitting: split at paragraph/sentence/word boundaries hierarchically
+- Semantic chunking: split where embedding similarity drops below a threshold
+- Late chunking: embed full document, then split; preserves global context in chunk embeddings
+
+Vector Databases
+
+Vector databases store embeddings and support efficient similarity search:
+- FAISS: Facebook AI Similarity Search; highly optimized for ANN search in memory
+- Chroma: open-source, embedded, with metadata filtering
+- Qdrant: production-grade with advanced filtering and payload indexing
+- Weaviate: multi-modal vector database with GraphQL API
+- pgvector: PostgreSQL extension for vector similarity search
+
+Dense and Sparse Retrieval
+
+Dense retrieval uses embedding similarity (cosine, dot product) to find semantically relevant
+documents. Bi-encoder models (like all-MiniLM-L6-v2) encode queries and documents separately.
+
+Sparse retrieval uses term-frequency methods like BM25 (Best Match 25), which scores
+documents based on term frequency and inverse document frequency. BM25 excels at exact
+keyword matching and rare term retrieval.
+
+Hybrid retrieval combines dense and sparse signals using Reciprocal Rank Fusion (RRF) or
+learned fusion models. Hybrid consistently outperforms either method alone on retrieval benchmarks.
+
+Advanced RAG Techniques
+
+HyDE (Hypothetical Document Embeddings): Generate a hypothetical answer to the query using
+the LLM, then embed and search for it. The hypothetical answer is in the same embedding
+space as real documents, bridging the query-document semantic gap.
+
+Self-RAG: The model decides when to retrieve, grades retrieved documents for relevance, and
+checks if its own generated answer is supported by the retrieved context.
+
+CRAG (Corrective RAG): Evaluates retrieved documents and falls back to web search if the
+local knowledge base does not contain relevant information.
+
+RAPTOR (Recursive Abstractive Processing for Tree-Organized Retrieval): Builds a tree of
+summaries at multiple levels of abstraction, enabling retrieval at different granularities.
+
+ColBERT: Multi-vector retrieval where each token in the query is compared to each token in
+documents using late interaction, providing more fine-grained matching than single-vector retrieval.
+
+GraphRAG: Builds a knowledge graph from the document corpus and uses graph traversal for
+multi-hop reasoning across related entities.
+
+Cross-Encoder Reranking
+
+A two-stage retrieval pipeline:
+1. First stage: fast bi-encoder retrieval to get top-N candidates (e.g., top 50)
+2. Second stage: cross-encoder reranker scores each (query, document) pair together using full
+   attention between query and document tokens, producing a more accurate relevance score
+
+Cross-encoder reranking consistently improves retrieval precision at the cost of latency.
+
+RAG Evaluation
+
+RAGAS (Retrieval-Augmented Generation Assessment) provides automated metrics:
+- Faithfulness: is the answer supported by the retrieved context?
+- Answer relevancy: does the answer address the question?
+- Context recall: were the relevant documents retrieved?
+- Context precision: were the retrieved documents relevant?
+
+Production RAG Considerations
+
+Semantic caching: cache LLM responses by embedding similarity to avoid redundant LLM calls.
+A cache hit occurs when a new query is semantically similar to a cached query.
+
+Multi-tenant security: row-level security ensures each tenant can only access their own data.
+
+Async indexing: use change data capture (CDC) to keep the vector index in sync with source
+documents as they are updated or deleted.
+
+Observability: trace every retrieval and generation call with tools like LangSmith or Phoenix
+to monitor latency, token usage, and answer quality over time.

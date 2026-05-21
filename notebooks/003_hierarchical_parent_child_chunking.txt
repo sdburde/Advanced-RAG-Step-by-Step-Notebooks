@@ -1,0 +1,56 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+003 — HIERARCHICAL PARENT-CHILD CHUNKING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+THE PROBLEM
+  Big chunks   → bad search (too much noise, low precision)
+  Small chunks → bad answers (not enough context for the LLM)
+  You need BOTH.
+
+THE SOLUTION
+  Index small chunks for search.
+  Return their big parent chunk to the LLM.
+  "Retrieve small. Return big."
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+parent chunk  → large piece of text (1000-2000 chars). Given to LLM for context.
+child chunk   → small piece of text (200-400 chars). Used for vector search.
+parent_id     → the ID stored in a child chunk so we can look up its parent
+deduplication → when multiple children match, return each parent only once
+docstore      → separate key-value store that holds the full parent texts
+
+─────────────────────────────────────────
+HOW IT WORKS
+─────────────────────────────────────────
+
+INGEST:
+  1. Split document into large parent chunks (e.g. 1500 chars)
+  2. Split each parent into small child chunks (e.g. 300 chars)
+  3. Store child in vector DB with metadata: parent_id, parent_text
+  4. Index only children (small = precise search)
+
+RETRIEVE:
+  1. User asks a question
+  2. Search vector DB → get top-k children
+  3. Look up each child's parent_id → fetch the full parent text
+  4. Deduplicate (same parent can match multiple children)
+  5. Send parent texts as context to the LLM
+
+─────────────────────────────────────────
+NUMBERS TO REMEMBER
+─────────────────────────────────────────
+
+parent_chunk_size = 1500  (what LLM reads)
+child_chunk_size  = 300   (what vector DB indexes)
+ratio             = 5:1   (one parent → ~5 children)
+
+─────────────────────────────────────────
+RULE OF THUMB
+─────────────────────────────────────────
+
+Use parent-child when your chunks feel "too small to answer" but
+"too large to retrieve precisely". It is the most practical upgrade
+from basic RAG.

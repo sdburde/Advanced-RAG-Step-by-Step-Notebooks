@@ -1,0 +1,66 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+010 — SELF-RAG WITH LANGGRAPH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS SELF-RAG?
+  The LLM grades its own retrieval and generation.
+  It decides: are these docs relevant? Is my answer grounded?
+  If not → try again. This turns RAG into a self-correcting loop.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+Self-RAG        → RAG with self-grading: retrieve, grade, generate, grade, loop
+relevance grade → LLM reads doc + question → says "yes" (relevant) or "no"
+hallucination   → the LLM making up facts not in the retrieved context
+grounding       → answer is fully supported by retrieved context (no hallucination)
+LangGraph       → Python library to build LLM workflows as a state machine graph
+state           → a dictionary passed between nodes that stores current progress
+node            → a function in the LangGraph that reads and updates state
+edge            → connection between nodes. Can be conditional (if/else branching)
+conditional edge → branch based on state value (e.g. "grounded" → END, else → retry)
+MAX_RETRIES     → max number of retry loops before giving up (e.g. 2)
+
+─────────────────────────────────────────
+THE FOUR NODES
+─────────────────────────────────────────
+
+1. retrieve        → vector search, get top-k docs
+2. grade_documents → for each doc: LLM says yes/no relevant
+                     if all irrelevant → keep top-2 as fallback
+3. generate        → LLM answers using kept docs
+4. grade_generation → LLM checks: is the answer grounded?
+                      yes → END
+                      no  → go back to retrieve (retry)
+
+─────────────────────────────────────────
+LANGGRAPH FLOW
+─────────────────────────────────────────
+
+START
+  → retrieve
+  → grade_documents  (filter irrelevant)
+  → generate
+  → grade_generation
+       ↓ grounded?
+      YES → END
+       NO  → retrieve (retry, up to MAX_RETRIES)
+
+─────────────────────────────────────────
+STATE FIELDS
+─────────────────────────────────────────
+
+question      → the user's question
+documents     → list of retrieved chunk texts
+generation    → the LLM's answer
+retries       → how many times we have looped
+hallucination → "yes" (bad) or "no" (good, means grounded)
+
+─────────────────────────────────────────
+RULE OF THUMB
+─────────────────────────────────────────
+
+Self-RAG adds 2-4 extra LLM calls per query.
+Use it when answer accuracy matters more than speed.
+Set MAX_RETRIES = 2. More than that usually doesn't help.

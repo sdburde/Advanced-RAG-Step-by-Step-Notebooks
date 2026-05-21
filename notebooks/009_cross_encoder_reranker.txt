@@ -1,0 +1,67 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+009 — CROSS-ENCODER RERANKER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+THE PROBLEM
+  Vector search is fast but imprecise.
+  The top-1 result by cosine similarity is often not the best answer.
+
+THE SOLUTION
+  Two stages:
+    Stage 1 (fast, rough): vector search → get top-50 candidates
+    Stage 2 (slow, precise): cross-encoder reads query+doc together → rerank
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+bi-encoder    → encodes query and document SEPARATELY into vectors
+               fast (vectors are pre-computed), but less accurate
+cross-encoder → reads query AND document TOGETHER in one pass
+               slow (can't pre-compute), but much more accurate
+reranker      → a cross-encoder used specifically to re-order results
+two-stage     → retrieve many (fast), rerank to few (accurate)
+latency       → time to get a response. Cross-encoder adds ~20-50ms per doc.
+score         → cross-encoder outputs a single relevance number per (q,d) pair
+               range roughly -10 to +10 (higher = more relevant)
+
+─────────────────────────────────────────
+WHY CROSS-ENCODER IS MORE ACCURATE
+─────────────────────────────────────────
+
+Bi-encoder:    query → [vector]    doc → [vector]    compare vectors
+Cross-encoder: query + doc → [full attention] → single relevance score
+
+The cross-encoder sees the interaction between query and document words.
+It knows "bank" means "river bank" when the document says "water" nearby.
+The bi-encoder cannot do this — vectors are computed independently.
+
+─────────────────────────────────────────
+THE PATTERN
+─────────────────────────────────────────
+
+initial_retriever  k=20   (bi-encoder, returns 20 candidates fast)
+reranker           top_k=5  (cross-encoder picks best 5 from those 20)
+LLM context        top 4 or 5 reranked docs
+
+─────────────────────────────────────────
+MODEL TO USE
+─────────────────────────────────────────
+
+Fast:    cross-encoder/ms-marco-MiniLM-L-6-v2   (~90MB, 6 layers)
+Better:  cross-encoder/ms-marco-MiniLM-L-12-v2  (~120MB, 12 layers)
+
+─────────────────────────────────────────
+LATENCY ESTIMATE
+─────────────────────────────────────────
+
+Reranking 20 docs on CPU ≈ 400ms total (~20ms per doc pair)
+Acceptable for most chatbot applications.
+
+─────────────────────────────────────────
+RULE OF THUMB
+─────────────────────────────────────────
+
+Always retrieve 3-5× more than you need, then rerank.
+e.g. need top-4 → retrieve 20 → rerank → return top-4.
+Reranking is the second-highest-ROI upgrade after hybrid retrieval.

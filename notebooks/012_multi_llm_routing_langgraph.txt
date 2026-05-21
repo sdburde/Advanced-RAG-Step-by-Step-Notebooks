@@ -1,0 +1,67 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+012 — MULTI-LLM ROUTING WITH LANGGRAPH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS LLM ROUTING?
+  Not every question needs the most expensive model.
+  Classify the query first, then send it to the right model.
+  Simple question → fast cheap model. Hard question → slow powerful model.
+  Saves 3-5× cost with the same answer quality.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+routing       → deciding which model or path to use for a query
+classifier    → a small LLM call that reads the query and outputs a category
+simple query  → factual lookup, definition, yes/no (one sentence answer)
+complex query → multi-step reasoning, comparison, synthesis (needs long answer)
+code query    → the user wants code written or debugged
+token cost    → how much you pay per 1000 tokens (cheap model = 10-100× less)
+latency       → how long the user waits. Fast model = ~0.5s. Smart model = ~5s.
+conditional edge → LangGraph feature: branch to different nodes based on state
+
+─────────────────────────────────────────
+MODEL CHOICES (Groq)
+─────────────────────────────────────────
+
+Fast (simple):    llama-3.1-8b-instant   → cheap, sub-second
+Smart (complex):  llama-3.3-70b-versatile → expensive, 5-10× slower
+
+─────────────────────────────────────────
+LANGGRAPH ROUTING FLOW
+─────────────────────────────────────────
+
+START
+  → classify   (LLM reads query → "simple" / "complex" / "code")
+  → fetch_ctx  (retrieve relevant docs from vector store)
+  → [branch]
+       "simple"  → generate_simple  (fast model, short prompt)
+       "complex" → generate_complex (smart model, detailed prompt)
+       "code"    → generate_code    (smart model, code-focused prompt)
+  → END
+
+─────────────────────────────────────────
+CLASSIFIER PROMPT PATTERN
+─────────────────────────────────────────
+
+"Classify the query into: simple / complex / code
+ Reply with ONLY the category word."
+
+Use the FAST model to classify (saves money, the classification itself is easy).
+
+─────────────────────────────────────────
+COST EXAMPLE
+─────────────────────────────────────────
+
+Without routing: all 1000 queries → smart model → $10
+With routing:    700 simple → fast model + 300 complex → smart model → $3
+Savings: 70%
+
+─────────────────────────────────────────
+RULE OF THUMB
+─────────────────────────────────────────
+
+Always use the fast model for classification itself.
+Route 60-70% of real-world queries to the fast model.
+Add a cache layer before routing (see notebook 016) to save even more.

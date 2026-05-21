@@ -1,0 +1,62 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+001 — DATA CHUNKING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS CHUNKING?
+  Breaking a big document into small pieces so the LLM can read them.
+  Smaller pieces = easier to search. Wrong size = bad answers.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+chunk         → one small piece of text cut from a big document
+chunk_size    → max number of characters in one chunk (e.g. 512)
+chunk_overlap → how many characters two neighbouring chunks share
+               (stops answers from being cut at a boundary)
+separator     → the character/word where we prefer to cut (\n\n, ., space)
+corpus        → the full collection of documents you are searching over
+
+─────────────────────────────────────────
+STRATEGIES
+─────────────────────────────────────────
+
+1. FIXED-SIZE
+   Cut every N characters. Simple. Fast.
+   Problem: can cut mid-word or mid-sentence.
+   Use for: tables, code, logs.
+
+2. RECURSIVE CHARACTER SPLIT  ← default choice
+   Try to cut at \n\n first, then \n, then ". ", then " ".
+   Respects paragraph and sentence boundaries.
+   Use for: any general text.
+
+3. SEMANTIC CHUNKING
+   Embed every sentence. Cut where the meaning changes a lot
+   (cosine similarity drops below a threshold like 0.78).
+   Keeps one idea per chunk.
+   Use for: long articles where topics shift.
+   Cost: must embed every sentence at ingest time.
+
+4. LATE CHUNKING
+   Embed the whole document first to get global meaning.
+   Then split into chunks and blend each chunk's embedding
+   with the document embedding (70% chunk + 30% doc).
+   Each chunk remembers the full document context.
+   Use for: high-precision Q&A, isolated chunks that lose meaning.
+
+─────────────────────────────────────────
+KEY NUMBERS TO REMEMBER
+─────────────────────────────────────────
+
+chunk_size    = 512   (good default)
+chunk_overlap = 50    (good default, ~10% of chunk size)
+threshold     = 0.78  (semantic split breakpoint)
+alpha         = 0.7   (late chunking blend: 70% chunk, 30% doc)
+
+─────────────────────────────────────────
+RULE OF THUMB
+─────────────────────────────────────────
+
+Start with Recursive. Switch to Semantic if topics shift within docs.
+Use Late Chunking if retrieved chunks feel "out of context".

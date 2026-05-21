@@ -1,0 +1,65 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+004 — VECTOR STORAGE TYPES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS A VECTOR STORE?
+  A database that stores embeddings (number lists) and lets you search
+  for the most similar ones to a query embedding. Fast neighbour search.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+embedding     → a list of numbers (vector) that represents the meaning of text
+               e.g. "cat" → [0.12, -0.45, 0.89, ...]  (384 numbers)
+similarity    → how close two embeddings are. Closer = more similar meaning.
+cosine sim    → most common measure. Range: -1 (opposite) to +1 (identical)
+ANN           → Approximate Nearest Neighbour. Fast but slightly imprecise.
+               Used by FAISS. Much faster than exact search at scale.
+index         → pre-built structure that makes similarity search fast
+collection    → a named group of vectors in ChromaDB (like a table)
+
+─────────────────────────────────────────
+THE THREE OPTIONS
+─────────────────────────────────────────
+
+FAISS (Facebook AI Similarity Search)
+  → Stores in RAM. Very fast. No persistence by default.
+  → Best for: production, large scale, speed matters
+  → Save/load with: vectorstore.save_local() / FAISS.load_local()
+
+CHROMADB
+  → Stores on disk (SQLite). Supports metadata filtering.
+  → Best for: development, medium scale, need to filter by metadata
+  → Can run embedded (in-process) or as a separate server
+
+NUMPY BRUTE-FORCE
+  → No indexing. Computes similarity to every vector one by one.
+  → Best for: prototyping, understanding, < 10k docs
+  → Too slow for production
+
+─────────────────────────────────────────
+COMPARISON
+─────────────────────────────────────────
+
+Store      Build    Query    Persist   Filter   Scale
+FAISS      fast     ~1ms     yes       limited  >10M docs
+ChromaDB   medium   ~5ms     yes       full     <1M docs
+Numpy      slow     slow     no        manual   <50k docs
+
+─────────────────────────────────────────
+OTHER STORES (production)
+─────────────────────────────────────────
+
+Qdrant    → production-grade, full filtering, REST + gRPC API
+pgvector  → PostgreSQL extension. SQL + vectors in one place.
+Weaviate  → multi-modal (text + images), GraphQL API
+
+─────────────────────────────────────────
+RULE OF THUMB
+─────────────────────────────────────────
+
+Prototype → Numpy or ChromaDB (ephemeral)
+Dev/test  → ChromaDB (persistent, filterable)
+Prod      → FAISS or Qdrant
+Already on Postgres → pgvector

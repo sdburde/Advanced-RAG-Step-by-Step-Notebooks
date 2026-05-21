@@ -1,0 +1,73 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+014 — REACT AGENT WITH TOOLS (LANGGRAPH)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS REACT?
+  Reason + Act. The LLM thinks step by step AND uses tools.
+  Each step: Thought → Action (call a tool) → Observation (result) → repeat.
+  Keeps going until it has a final answer.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+ReAct         → Reason + Act. LLM loop: think, call tool, observe, repeat.
+tool          → a Python function the LLM can call (search, calculator, DB, API)
+tool call     → LLM decides to call a tool and provides its arguments
+observation   → the result the tool returns back to the LLM
+tool schema   → JSON description of what the tool does and its parameters
+               The LLM reads this to know how to call the tool correctly.
+@tool         → LangChain decorator that turns a Python function into a tool
+agent loop    → the cycle: LLM thinks → calls tool → reads result → thinks → ...
+stopping      → loop ends when LLM produces a final answer (no tool call)
+
+─────────────────────────────────────────
+HOW A TOOL IS DEFINED
+─────────────────────────────────────────
+
+@tool
+def calculator(expression: str) -> str:
+    "Evaluate a math expression. E.g. '2**10' or '100/4'"
+    return str(eval(expression))
+
+The docstring becomes the tool description the LLM reads.
+The type hints become the parameter schema.
+
+─────────────────────────────────────────
+THE REACT LOOP (one turn)
+─────────────────────────────────────────
+
+1. LLM reads: user message + tool list
+2. LLM outputs: either a tool call OR a final text answer
+3. If tool call → run the tool → feed result back to LLM → go to step 2
+4. If text answer → done
+
+─────────────────────────────────────────
+LANGGRAPH SHORTCUT
+─────────────────────────────────────────
+
+from langgraph.prebuilt import create_react_agent
+
+app = create_react_agent(llm, tools=[rag_search, calculator, text_stats])
+result = app.invoke({"messages": [HumanMessage(content="your question")]})
+
+create_react_agent handles the loop automatically.
+
+─────────────────────────────────────────
+TYPICAL TOOLS IN A RAG AGENT
+─────────────────────────────────────────
+
+rag_search    → search the local knowledge base
+web_search    → search the internet (Tavily, Serper, DuckDuckGo)
+calculator    → math
+sql_query     → query a database
+code_executor → run Python code
+file_reader   → read a file
+
+─────────────────────────────────────────
+RULE OF THUMB
+─────────────────────────────────────────
+
+Each tool call costs 1 LLM roundtrip. Keep tools fast (<1s).
+Write clear, short docstrings — the LLM's tool choice depends on them.
+Always add a MAX_ITERATIONS guard to prevent infinite loops.

@@ -1,0 +1,97 @@
+Deep Learning
+
+Deep learning is part of a broader family of machine learning methods based on artificial neural
+networks with representation learning. Learning can be supervised, semi-supervised or unsupervised.
+
+Deep neural networks (DNNs) consist of multiple layers of neurons between the input and output
+layers. Each layer learns increasingly abstract representations of the input data. The depth
+enables the network to learn hierarchical features automatically.
+
+Convolutional Neural Networks (CNNs)
+
+CNNs are specialized for processing grid-like data such as images. The key operations are:
+- Convolution: applying learnable filters to detect local patterns
+- Pooling: downsampling feature maps to reduce spatial dimensions
+- Fully connected layers: combining features for classification
+
+Famous architectures: AlexNet (2012), VGGNet (2014), GoogLeNet (2014), ResNet (2015).
+ResNet introduced skip connections (residual connections) to address the vanishing gradient
+problem and enabled training of networks with hundreds of layers.
+
+Batch normalization normalizes layer inputs to have zero mean and unit variance, enabling
+faster training and reducing sensitivity to initialization. It has become standard in CNNs.
+
+Recurrent Networks
+
+Long Short-Term Memory (LSTM) networks use gating mechanisms to control information flow:
+the forget gate decides what to discard from the cell state, the input gate decides what new
+information to add, and the output gate decides what to output.
+
+Sequence-to-sequence models with attention use an encoder to process the input sequence and
+a decoder to generate the output sequence, with attention allowing the decoder to focus on
+relevant encoder states at each step.
+
+Attention and Transformers
+
+The attention mechanism computes a query-key-value system:
+Attention(Q, K, V) = softmax(QK^T / sqrt(d_k)) * V
+
+Multi-head attention runs multiple attention operations in parallel, each attending to different
+representation subspaces. This allows the model to jointly attend to information from different
+positions at different representation levels.
+
+The Transformer architecture uses stacked self-attention and feed-forward layers. The encoder
+processes the full input simultaneously; the decoder generates output auto-regressively.
+
+Generative Models
+
+Generative Adversarial Networks (GANs) consist of a generator that creates fake data and a
+discriminator that tries to distinguish real from fake. The two networks train adversarially,
+improving together through competition. Variants include DCGAN, StyleGAN, and CycleGAN.
+
+Variational Autoencoders (VAEs) learn a compressed latent representation of data by encoding
+inputs to distributions rather than fixed points. The reparameterization trick enables backprop
+through the sampling step.
+
+Diffusion models generate data by learning to reverse a gradual noise-addition process.
+They have achieved state-of-the-art image generation quality (DALL-E 2, Stable Diffusion).
+
+Large Language Models
+
+GPT (Generative Pretrained Transformer) models are autoregressive transformers trained to
+predict the next token. GPT-2 (2019) demonstrated that large-scale pretraining enables
+zero-shot and few-shot generalization. GPT-3 (2020) with 175B parameters showed emergent
+capabilities: arithmetic, code generation, translation without any task-specific training.
+
+BERT (2018) uses masked language modeling to pretrain a bidirectional transformer encoder.
+Fine-tuning BERT on downstream tasks achieves state-of-the-art results across many NLP tasks.
+
+T5 (Text-to-Text Transfer Transformer) frames all NLP tasks as text-to-text problems, using
+a single encoder-decoder model for translation, summarization, QA, and classification.
+
+Training Techniques
+
+Data augmentation artificially expands training data through transformations like rotation,
+flipping, cropping (for images), or back-translation, synonym replacement (for text).
+
+Dropout randomly sets a fraction of neurons to zero during training, acting as regularization.
+It prevents co-adaptation of neurons and reduces overfitting.
+
+Learning rate scheduling adjusts the learning rate during training. Common schedules:
+- Step decay: reduce LR by a factor every N epochs
+- Cosine annealing: follow a cosine curve from initial to minimum LR
+- Warmup: gradually increase LR at the start of training
+
+Mixed precision training uses float16 for forward/backward pass and float32 for optimizer
+updates, reducing memory usage and speeding up training on modern GPUs.
+
+Transfer Learning and Fine-tuning
+
+Pretrained models like ResNet, BERT, and GPT can be fine-tuned on specific tasks by:
+- Feature extraction: freeze the pretrained weights, train only a new classification head
+- Full fine-tuning: update all weights starting from the pretrained values
+- Parameter-efficient fine-tuning (PEFT): methods like LoRA and adapters that update only
+  a small fraction of parameters while achieving competitive performance
+
+LoRA (Low-Rank Adaptation) decomposes weight updates into low-rank matrices, dramatically
+reducing the number of trainable parameters while maintaining model quality.

@@ -1,0 +1,64 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+013 — CRAG: CORRECTIVE RAG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS CRAG?
+  Corrective RAG. Checks retrieved docs BEFORE generating.
+  If the docs are not relevant → fix the retrieval (e.g. search the web).
+  Never generate from bad context.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+CRAG          → Corrective RAG. Grade first, generate only if docs are good.
+relevance grade → LLM reads (doc, question) → "correct" / "ambiguous" / "incorrect"
+correct       → doc is clearly relevant → use it directly
+ambiguous     → doc is partially relevant → supplement with web search
+incorrect     → doc is not relevant at all → discard, use web search instead
+web search    → fallback when local KB fails. Gets fresh/missing information.
+knowledge refinement → strip boilerplate (headers, ads) from web results
+                       keep only the useful factual content
+fallback      → the backup plan when primary retrieval fails
+
+─────────────────────────────────────────
+THREE VERDICTS AND WHAT HAPPENS
+─────────────────────────────────────────
+
+CORRECT   → all docs relevant     → generate from local docs only
+AMBIGUOUS → some docs relevant    → use local + add web search results
+INCORRECT → no docs relevant      → discard all local, use only web search
+
+─────────────────────────────────────────
+LANGGRAPH FLOW
+─────────────────────────────────────────
+
+START
+  → retrieve          (get top-k from local vector DB)
+  → grade_and_correct (grade each doc, apply fallback if needed)
+  → generate          (LLM answers from kept/supplemented docs)
+  → END
+
+─────────────────────────────────────────
+GRADER PROMPT PATTERN
+─────────────────────────────────────────
+
+System: "Grade document relevance.
+         Reply with one word: correct / ambiguous / incorrect"
+Human:  "Document: {doc}\nQuestion: {question}"
+
+─────────────────────────────────────────
+DIFFERENCE FROM SELF-RAG
+─────────────────────────────────────────
+
+Self-RAG   → grades AFTER generating (checks if answer is grounded)
+CRAG       → grades BEFORE generating (checks if docs are relevant)
+Best combo → use both together
+
+─────────────────────────────────────────
+RULE OF THUMB
+─────────────────────────────────────────
+
+Use CRAG when your corpus may not cover all possible questions.
+The web-search fallback ensures questions outside your KB still get answered.
+Pair with Self-RAG for maximum correction capability.

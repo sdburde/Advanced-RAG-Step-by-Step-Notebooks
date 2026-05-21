@@ -1,0 +1,72 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+016 — SEMANTIC CACHE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS SEMANTIC CACHE?
+  A cache that matches similar questions, not just identical ones.
+  "What is ML?" and "Define machine learning" → same cache hit.
+  Saves LLM calls, reduces cost and latency.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+cache         → stored answer you can return without calling the LLM again
+cache hit     → the incoming query is similar enough to a cached query
+cache miss    → no similar query found → must call the LLM
+exact cache   → matches only identical strings ("What is AI?" ≠ "Define AI")
+semantic cache → matches by meaning using cosine similarity
+threshold     → minimum cosine similarity to count as a cache hit (e.g. 0.92)
+TTL           → Time To Live. How long a cached answer is valid before expiry.
+hit rate      → % of queries answered from cache (40-60% is typical)
+warm up       → pre-loading the cache with answers to common questions
+
+─────────────────────────────────────────
+HOW IT WORKS
+─────────────────────────────────────────
+
+ON QUERY:
+  1. Embed the new query
+  2. Compare to all cached query embeddings (cosine similarity)
+  3. If best similarity >= threshold → return cached answer (HIT)
+  4. Else → call LLM → store answer in cache (MISS)
+
+─────────────────────────────────────────
+THRESHOLD GUIDE
+─────────────────────────────────────────
+
+0.88  → aggressive. More hits. Risk: slightly different queries get same answer.
+0.92  → balanced. Good default.
+0.95  → conservative. Fewer hits. Very safe, almost no wrong cache returns.
+
+─────────────────────────────────────────
+COST SAVINGS FORMULA
+─────────────────────────────────────────
+
+LLM calls = total_queries × (1 - hit_rate)
+Cost saved = hit_rate × cost_per_query
+
+Example: 1000 queries, 50% hit rate, $0.01/query → save $5
+
+─────────────────────────────────────────
+PRODUCTION IMPLEMENTATION
+─────────────────────────────────────────
+
+Dev/small:   in-memory Python dict + numpy cosine similarity (as in notebook)
+Production:  Redis + HNSW vector index (fast approximate search at scale)
+
+─────────────────────────────────────────
+CACHE INVALIDATION
+─────────────────────────────────────────
+
+TTL          → expire entries after N hours/days
+Explicit     → clear cache when source documents change
+Versioned    → tag cache with doc version, purge old versions
+
+─────────────────────────────────────────
+RULE OF THUMB
+─────────────────────────────────────────
+
+Put semantic cache BEFORE routing and BEFORE LLM calls.
+It is the cheapest possible way to reduce cost — pure savings, no accuracy loss.
+Always warm up the cache with your top-20 FAQ queries on startup.

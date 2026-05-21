@@ -1,0 +1,59 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+005 — BM25 FULL-TEXT RETRIEVAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS BM25?
+  Best Match 25. A scoring formula that ranks documents by keyword match.
+  No embeddings. Pure word counting with smart weighting.
+  The algorithm inside Elasticsearch and Lucene.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+sparse retrieval → search using word counts, not meaning vectors
+                   most words score 0 (sparse = mostly zeros)
+dense retrieval  → search using embedding vectors (see notebook 004/007)
+TF              → Term Frequency. How often does the word appear in the doc?
+IDF             → Inverse Document Frequency. How rare is the word overall?
+                  Rare word = more informative = higher score
+BM25            → improved TF-IDF with saturation (stops rewarding repeated words)
+tokenize        → split text into words. "Machine learning" → ["machine","learning"]
+inverted index  → for each word, list of docs that contain it. Makes search fast.
+
+─────────────────────────────────────────
+BM25 FORMULA (simplified)
+─────────────────────────────────────────
+
+score(doc, query) = Σ IDF(word) × TF(word in doc) / (TF + k1)
+
+k1 = 1.5  (controls how fast TF saturates — repeated words matter less)
+b  = 0.75 (controls length normalisation — penalises very long docs)
+
+─────────────────────────────────────────
+WHEN BM25 WINS vs DENSE
+─────────────────────────────────────────
+
+BM25 wins for:              Dense wins for:
+  exact keyword match         "what is machine learning?"
+  product names / codes       synonyms ("car" vs "automobile")
+  dates and numbers           conceptual questions
+  rare technical terms        paraphrased queries
+  "GPT-4 hallucination rate"  "how do LLMs make things up?"
+
+─────────────────────────────────────────
+HOW IT WORKS IN CODE
+─────────────────────────────────────────
+
+1. Tokenize all documents (lowercase, remove punctuation)
+2. Build BM25 index with BM25Okapi(tokenized_corpus)
+3. At query time: tokenize query, call bm25.get_scores(tokens)
+4. Return top-k by score
+
+─────────────────────────────────────────
+RULE OF THUMB
+─────────────────────────────────────────
+
+Never use BM25 alone in a RAG system.
+Always combine it with dense retrieval → see notebook 006 (Hybrid + RRF).
+BM25 catches what dense misses and dense catches what BM25 misses.

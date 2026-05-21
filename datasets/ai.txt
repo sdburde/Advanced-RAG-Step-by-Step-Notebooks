@@ -1,0 +1,99 @@
+Artificial Intelligence
+
+Artificial intelligence (AI) is intelligence demonstrated by machines, as opposed to natural intelligence
+displayed by animals including humans. AI research has been defined as the field of study of intelligent
+agents, which refers to any system that perceives its environment and takes actions that maximize its
+chance of achieving its goals.
+
+The term "artificial intelligence" had previously been used to describe machines that mimic and display
+"human" cognitive skills associated with the human mind, such as "learning" and "problem-solving".
+This definition has since been rejected by major AI researchers who now describe AI in terms of
+rationality and acting rationally, which does not limit how intelligence can be articulated.
+
+AI applications include advanced web search engines such as Google Search, recommendation systems
+used by YouTube, Amazon, and Netflix, understanding human speech such as Siri and Alexa,
+self-driving cars such as Waymo, generative AI tools such as ChatGPT, and competing at the
+highest level in strategic games such as chess and Go.
+
+History of Artificial Intelligence
+
+The field of AI research was founded at a workshop held on the campus of Dartmouth College during
+the summer of 1956. Those who attended would become the leaders of AI research for decades. Many
+of them predicted that a machine as intelligent as a human being would exist in no more than a
+generation, and they were given millions of dollars to make this vision come true. Eventually it
+became obvious that commercial developers and some government contractors had taken a much more
+pragmatic approach and that there were major hurdles in the way.
+
+The first AI winter (1974–1980): By 1974, the progress in AI had slowed significantly. The AI
+community had been unable to deliver on its promises, and government funding was cut sharply.
+Researchers such as Minsky and Papert had published Perceptrons (1969), which showed that
+two-layer neural networks could solve only linearly separable problems.
+
+The expert systems era (1980s): AI research was revived in the 1980s with the rise of expert
+systems. An expert system is a program that answers questions or solves problems in a specific
+domain of knowledge, using logical rules derived from the knowledge of experts.
+
+Deep Learning Revolution (2010s): The field was transformed by the success of deep learning,
+a subset of machine learning. Deep learning uses artificial neural networks with many layers
+to learn representations of data. The success of AlexNet in the 2012 ImageNet competition
+demonstrated that deep convolutional neural networks could achieve state-of-the-art performance.
+
+Machine Learning Approaches
+
+Machine learning is a subfield of AI. It is a method of data analysis that automates analytical
+model building. It is based on the idea that systems can learn from data, identify patterns and
+make decisions with minimal human intervention. There are several types of machine learning:
+
+Supervised learning is the machine learning task of learning a function that maps an input to
+an output based on example input-output pairs. It infers a function from labeled training data
+consisting of a set of training examples.
+
+Unsupervised learning is a type of algorithm that learns patterns from untagged data. The hope
+is that through mimicry, which is computationally cheaper than other approaches, the machine
+is forced to build a compact internal representation of its world.
+
+Reinforcement learning (RL) is an area of machine learning concerned with how intelligent
+agents ought to take actions in an environment in order to maximize the notion of cumulative
+reward. The agent learns to achieve a goal in an uncertain, potentially complex environment.
+
+Neural Networks and Deep Learning
+
+An artificial neural network (ANN) is modeled loosely after the human brain that is designed to
+recognize patterns. They interpret sensory data through a kind of machine perception, labeling
+or clustering raw input. The patterns they recognize are numerical, contained in vectors, into
+which all real-world data, be it images, sound, text or time series, must be translated.
+
+Deep learning is part of a broader family of machine learning methods based on artificial neural
+networks with representation learning. Learning can be supervised, semi-supervised or unsupervised.
+
+Convolutional neural networks (CNN) are specialized types of artificial neural networks designed
+to process pixel data and are used in image recognition and processing. They use a mathematical
+operation called convolution that scans input data and applies a filter to produce a feature map.
+
+Recurrent neural networks (RNN) are a type of artificial neural networks designed to recognize
+sequences and patterns in data. Unlike feedforward networks, RNNs have connections that form
+cycles, allowing output from some nodes to affect subsequent input to the same nodes.
+
+The Turing Test
+
+The Turing test is a test of a machine's ability to exhibit intelligent behaviour equivalent to,
+or indistinguishable from, that of a human. Alan Turing proposed it in 1950, in his paper
+"Computing Machinery and Intelligence". The test involves a human judge engaging in natural
+language conversations with both a human and a machine, with the judge trying to determine
+which is which.
+
+Applications of AI
+
+AI has been used in healthcare for disease diagnosis, drug discovery, and personalized medicine.
+Computer vision systems can detect cancer from medical images with superhuman accuracy.
+Natural language processing enables AI to understand and generate human text.
+Autonomous vehicles use AI for perception, decision-making, and control.
+Robotics AI enables machines to perform physical tasks in unstructured environments.
+
+Ethical Considerations
+
+As AI systems become more capable, questions about safety, bias, fairness, privacy, and the
+long-term future of humanity have become increasingly important. Bias in AI systems can
+perpetuate and amplify existing societal inequalities. Privacy concerns arise when AI systems
+process large amounts of personal data. Questions about accountability and transparency are
+raised when AI systems make consequential decisions.

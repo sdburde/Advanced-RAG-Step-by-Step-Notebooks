@@ -1,0 +1,98 @@
+Natural Language Processing
+
+Natural language processing (NLP) is a subfield of linguistics, computer science, and artificial
+intelligence concerned with the interactions between computers and human language, in particular
+how to program computers to process and analyze large amounts of natural language data.
+
+The goal is a computer capable of "understanding" the contents of documents, including the
+contextual nuances of the language within them. The technology can then accurately extract
+information and insights contained in the documents, as well as categorize and organize the
+documents themselves.
+
+Tokenization
+
+Tokenization is the process of breaking text into individual tokens (words, subwords, or characters).
+Word tokenization splits text at whitespace and punctuation. Subword tokenization, used by models
+like BPE (Byte Pair Encoding) and WordPiece, handles out-of-vocabulary words better by splitting
+rare words into more frequent subword units.
+
+Word Embeddings
+
+Word embeddings are dense vector representations of words that capture semantic meaning.
+Words with similar meanings have similar vector representations.
+
+Word2Vec: predicts words from their context (CBOW) or context from words (Skip-gram).
+GloVe (Global Vectors): learns word vectors from global word-word co-occurrence statistics.
+FastText: extends Word2Vec to use subword information, handling morphological variations.
+BERT embeddings are context-dependent, producing different vectors for the same word in
+different contexts, unlike the static embeddings above.
+
+Language Models
+
+A language model assigns probabilities to sequences of words. Early n-gram models estimated
+the probability of a word based on the previous N-1 words. Neural language models use
+recurrent networks or transformers to capture longer-range dependencies.
+
+Recurrent Neural Networks for NLP
+
+RNNs process sequences by maintaining a hidden state that captures information about previous
+tokens. Long Short-Term Memory (LSTM) networks address the vanishing gradient problem with
+gating mechanisms: the forget gate controls what to discard, the input gate what to add,
+and the output gate what to output.
+
+GRU (Gated Recurrent Unit) is a simplified version of LSTM with fewer parameters.
+Bidirectional RNNs process sequences in both directions, capturing both past and future context.
+
+Transformers
+
+The Transformer architecture, introduced in "Attention Is All You Need" (Vaswani et al., 2017),
+uses self-attention mechanisms to process sequences in parallel, enabling better capture of
+long-range dependencies and more efficient training.
+
+Self-attention allows each token to attend to all other tokens in the sequence, computing a
+weighted sum of their representations based on relevance. Multi-head attention runs multiple
+attention operations in parallel to capture different types of relationships.
+
+Positional encoding provides position information to the model since transformers have no
+inherent notion of sequence order. Absolute position encodings add fixed or learned vectors;
+relative position encodings (like in T5 and GPT-NeoX) encode distances between tokens.
+
+BERT (Bidirectional Encoder Representations from Transformers) pretrains a transformer encoder
+using masked language modeling (predict masked words) and next sentence prediction. Fine-tuning
+on downstream tasks achieves state-of-the-art performance on text classification, NER, QA.
+
+GPT (Generative Pretrained Transformer) pretrains an autoregressive decoder that predicts the
+next token given previous tokens. GPT-3 and GPT-4 demonstrate remarkable few-shot learning.
+
+Text Classification
+
+Text classification assigns predefined categories to text. Approaches:
+- Bag of words + logistic regression: simple but effective baseline
+- LSTM or CNN: captures local and sequential patterns
+- BERT fine-tuning: state-of-the-art for most classification tasks
+
+Named Entity Recognition (NER)
+
+NER identifies and classifies named entities (persons, organizations, locations, dates) in text.
+It is typically formulated as a sequence labeling task using IOB tags (Inside-Outside-Beginning).
+
+Question Answering
+
+Question answering systems either retrieve answers from documents (extractive QA) or generate
+them (generative QA). SQuAD is a benchmark for extractive QA where models highlight answer
+spans in passages. BERT-based models achieve superhuman performance on SQuAD.
+
+Machine Translation
+
+Neural machine translation uses encoder-decoder architectures with attention. The encoder
+processes the source sentence; the decoder generates the target sentence, attending to relevant
+source words. Transformer-based systems like Marian MT achieve very high translation quality.
+
+Text Generation
+
+Language models can generate coherent, relevant text when given a prompt. Decoding strategies:
+- Greedy decoding: always choose the most likely next token
+- Beam search: explore multiple candidate sequences simultaneously
+- Top-k sampling: randomly sample from the top k most likely tokens
+- Top-p (nucleus) sampling: sample from tokens whose cumulative probability exceeds p
+- Temperature: controls randomness (lower = more deterministic)
