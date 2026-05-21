@@ -5,7 +5,9 @@
 WHAT IS BM25?
   Best Match 25. A scoring formula that ranks documents by keyword match.
   No embeddings. Pure word counting with smart weighting.
-  The algorithm inside Elasticsearch and Lucene.
+  BM25 is the default ranking algorithm inside Elasticsearch and Apache Lucene.
+  It replaced plain TF-IDF as the standard because it handles two problems
+  TF-IDF gets wrong: word repetition and document length.
 
 ─────────────────────────────────────────
 KEYWORDS
@@ -13,22 +15,69 @@ KEYWORDS
 
 sparse retrieval → search using word counts, not meaning vectors
                    most words score 0 (sparse = mostly zeros)
-dense retrieval  → search using embedding vectors (see notebook 004/007)
+dense retrieval  → search using embedding vectors (float numbers, not word counts)
+                   every dimension has a non-zero value (dense = mostly non-zero)
 TF              → Term Frequency. How often does the word appear in the doc?
 IDF             → Inverse Document Frequency. How rare is the word overall?
                   Rare word = more informative = higher score
-BM25            → improved TF-IDF with saturation (stops rewarding repeated words)
+BM25            → improved TF-IDF with saturation and length normalisation
 tokenize        → split text into words. "Machine learning" → ["machine","learning"]
 inverted index  → for each word, list of docs that contain it. Makes search fast.
 
 ─────────────────────────────────────────
-BM25 FORMULA (simplified)
+BM25 FORMULA
 ─────────────────────────────────────────
 
-score(doc, query) = Σ IDF(word) × TF(word in doc) / (TF + k1)
+score(D, Q) = Σ  IDF(qi) ×  tf(qi, D) × (k1 + 1)
+               i            ─────────────────────────────
+                             tf(qi, D) + k1 × (1 − b + b × |D|/avgdl)
 
-k1 = 1.5  (controls how fast TF saturates — repeated words matter less)
-b  = 0.75 (controls length normalisation — penalises very long docs)
+  qi      = each query term
+  tf(qi,D)= count of term qi in document D
+  |D|     = number of words in document D
+  avgdl   = average document length across the whole collection
+  k1      = 1.2 to 2.0  (saturation — controls how much extra TF still helps)
+  b       = 0.75         (length penalty — 0 means no penalty, 1 means full)
+
+IDF formula used by Elasticsearch / Lucene (Robertson–Sparck Jones):
+
+  IDF(qi) = log( (N − n(qi) + 0.5) / (n(qi) + 0.5) + 1 )
+
+  N      = total number of documents in the index
+  n(qi)  = number of documents that contain term qi
+
+─────────────────────────────────────────
+HOW ELASTICSEARCH AND LUCENE USE BM25
+─────────────────────────────────────────
+
+Step 1 — INDEXING (done once, at write time)
+  Each document is tokenized (lowercased, punctuation removed, stopwords optional).
+  Lucene builds an inverted index:
+    word → [ (doc_id, positions, tf), ... ]
+  It also stores per-field stats: total docs (N), doc-frequency per term (n(qi)),
+  average field length (avgdl). These are needed to compute IDF and length penalty.
+
+Step 2 — QUERY TIME (at search time)
+  The query is tokenized using the same analyser as the index.
+  For each query term qi Lucene looks up its posting list in the inverted index.
+  It scores every matching document with the BM25 formula above.
+  Scores from each query term are summed to get the final document score.
+  Documents are ranked by score; top-k are returned.
+
+Step 3 — LENGTH NORMALISATION (the b parameter)
+  A 10-word document where the word "python" appears once
+  is more relevant than a 1000-word document where "python" appears once.
+  The denominator grows with |D|/avgdl, so longer docs are penalised.
+  b = 0.75 means roughly 75% of the length penalty is applied.
+  b = 0 turns off length normalisation completely.
+
+Step 4 — TF SATURATION (the k1 parameter)
+  In plain TF-IDF, a document with the word 100 times scores 100× higher
+  than one with the word once — even if the extra repetitions add no meaning.
+  In BM25, TF is divided by (TF + k1). As TF grows, the score approaches k1+1
+  asymptotically. Repeating a word 20 times gives almost the same score as 10 times.
+  k1 = 1.2 → fast saturation (repetitions matter very little)
+  k1 = 2.0 → slow saturation (repetitions still help somewhat)
 
 ─────────────────────────────────────────
 WHEN BM25 WINS vs DENSE
@@ -42,11 +91,12 @@ BM25 wins for:              Dense wins for:
   "GPT-4 hallucination rate"  "how do LLMs make things up?"
 
 ─────────────────────────────────────────
-HOW IT WORKS IN CODE
+HOW IT WORKS IN CODE (rank-bm25 library)
 ─────────────────────────────────────────
 
 1. Tokenize all documents (lowercase, remove punctuation)
 2. Build BM25 index with BM25Okapi(tokenized_corpus)
+   BM25Okapi uses k1=1.5, b=0.75 by default
 3. At query time: tokenize query, call bm25.get_scores(tokens)
 4. Return top-k by score
 
@@ -55,5 +105,6 @@ RULE OF THUMB
 ─────────────────────────────────────────
 
 Never use BM25 alone in a RAG system.
-Always combine it with dense retrieval → see notebook 006 (Hybrid + RRF).
-BM25 catches what dense misses and dense catches what BM25 misses.
+Always combine it with dense retrieval (Hybrid Search + RRF).
+BM25 catches exact keyword matches that dense retrieval misses.
+Dense retrieval catches semantic meaning that BM25 misses.
