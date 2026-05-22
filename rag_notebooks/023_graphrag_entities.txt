@@ -1,0 +1,65 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+023 — GRAPHRAG (KNOWLEDGE GRAPH RAG)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS GRAPHRAG?
+  RAG where retrieval uses a knowledge graph instead of (or alongside)
+  vector similarity. Extract entities + relationships from documents,
+  build a graph, then traverse it to find relevant context.
+
+─────────────────────────────────────────
+THE PROBLEM STANDARD RAG HAS
+─────────────────────────────────────────
+
+"Who built the system that uses attention and was trained on Wikipedia?"
+Standard RAG: needs a chunk that mentions all three things at once.
+GraphRAG: traverses BERT --uses--> Transformer --trained_on--> Wikipedia
+
+Multi-hop questions need graph traversal, not just similarity.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+entity          → named concept: person, system, paper, organisation
+relationship    → typed edge between entities: "created_by", "uses", "part_of"
+knowledge graph → directed graph of (entity, relation, entity) triples
+ego graph       → subgraph of all nodes within N hops of a starting node
+community       → cluster of densely connected nodes in the graph
+Leiden          → community detection algorithm used by Microsoft GraphRAG
+GraphRAG        → Microsoft 2024 open-source package (pip install graphrag)
+
+─────────────────────────────────────────
+PIPELINE
+─────────────────────────────────────────
+
+INDEX TIME:
+1. Chunk documents
+2. LLM extracts (entity, relation, entity) triples from each chunk
+3. Build directed graph (networkx DiGraph)
+4. Optionally: run community detection → generate community summaries
+
+QUERY TIME:
+1. LLM extracts entities from user query
+2. Find those entities in the graph
+3. Traverse N hops to find related entities
+4. Gather source chunks for all related entities
+5. LLM generates answer from gathered chunks
+
+─────────────────────────────────────────
+BEST USE CASES
+─────────────────────────────────────────
+
+  Research papers    → who cites whom, what method builds on what
+  Legal documents    → who agreed to what, which clause references which
+  Medical knowledge  → drug A interacts with B which treats C
+  Company knowledge  → who owns what, org chart, project dependencies
+
+─────────────────────────────────────────
+MICROSOFT GRAPHRAG (2024)
+─────────────────────────────────────────
+
+Full package: pip install graphrag
+Two query modes:
+  local search  → graph traversal for specific entity questions
+  global search → community summaries for broad "what is this about?" questions

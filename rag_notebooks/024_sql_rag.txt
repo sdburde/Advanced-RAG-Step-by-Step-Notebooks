@@ -1,0 +1,69 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+024 — SQL-RAG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS SQL-RAG?
+  RAG over structured (relational) data. NL question → SQL → execute
+  → LLM reads results → natural language answer.
+  Use when your knowledge lives in tables, not documents.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+NL-to-SQL         → converting natural language to a SQL query
+schema-aware      → the prompt includes table/column names so LLM writes valid SQL
+row_factory       → sqlite3.Row makes rows behave like dicts
+safe_execute()    → only allow SELECT; block DROP/DELETE/UPDATE/INSERT/ALTER
+error recovery    → if generated SQL fails, send error + schema back to LLM to fix
+Text-to-SQL       → same as NL-to-SQL
+
+─────────────────────────────────────────
+PIPELINE
+─────────────────────────────────────────
+
+1. SCHEMA     → extract table/column names from the database
+2. GENERATE   → LLM("schema + question → write SELECT query")
+3. VALIDATE   → reject non-SELECT; block DROP/DELETE/UPDATE
+4. EXECUTE    → run query, get rows as dicts
+5. ANSWER     → LLM("question + SQL + rows → natural language answer")
+6. RECOVER    → if SQL fails: send error to LLM → repaired SQL → retry
+
+─────────────────────────────────────────
+SAFETY RULES
+─────────────────────────────────────────
+
+ALWAYS check before executing:
+  sql.upper().strip().startswith("SELECT")
+  "DROP" not in sql.upper()
+  "DELETE" not in sql.upper()
+  "UPDATE" not in sql.upper()
+
+Use parameterized queries for user-supplied values in WHERE clauses.
+Connect with read-only mode for extra safety:
+  sqlite3.connect(path, uri=True)  with "file:path?mode=ro"
+
+─────────────────────────────────────────
+PROMPT PATTERN
+─────────────────────────────────────────
+
+System: "You are a SQL expert. Output ONLY a SELECT query, no markdown."
+Schema: Table papers(id INT, title TEXT, year INT, citations INT, category TEXT)
+Question: "Which category has the most papers published after 2020?"
+
+─────────────────────────────────────────
+WHEN TO USE
+─────────────────────────────────────────
+
+Use SQL-RAG for:
+  Aggregations (count, sum, average)
+  Filtering (WHERE year > 2020)
+  Sorted lists (ORDER BY citations DESC LIMIT 5)
+  Structured enterprise data (CRM, databases, spreadsheets)
+
+Use vector RAG for:
+  Unstructured text (PDFs, docs, emails)
+  Semantic/conceptual questions
+
+Use BOTH together:
+  Filter candidates with SQL → retrieve full text with vector RAG

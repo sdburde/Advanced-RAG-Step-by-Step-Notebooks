@@ -1,0 +1,77 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+025 — AGENTIC RAG WITH PLANNING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS AGENTIC RAG?
+  The LLM is the controller. It decides WHEN to retrieve, WHAT to search,
+  and WHETHER the result is good enough. Multiple retrieval steps allowed.
+  Not a fixed pipeline — dynamic loop until the answer is satisfactory.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+agentic RAG        → LLM controls the retrieval loop, not a fixed pipeline
+plan-then-retrieve → LLM decomposes question into sub-queries before retrieval
+iterative RAG      → retrieve → evaluate → refine query → retrieve again
+ReAct              → Reason + Act. LLM alternates Thought/Action/Observation
+tool call          → LLM outputs a structured request to call a function
+stop condition     → loop ends when LLM returns no more tool calls
+sufficiency check  → LLM evaluates if retrieved context is complete enough
+
+─────────────────────────────────────────
+PATTERNS
+─────────────────────────────────────────
+
+1. PLAN-THEN-RETRIEVE
+   LLM: "I need sub-query A, B, C"
+   → retrieve A, B, C in parallel → merge → answer
+
+2. ITERATIVE RETRIEVAL
+   Retrieve → evaluate sufficiency
+   → if insufficient: refine query → retrieve again
+   → if sufficient: generate answer
+
+3. REACT LOOP (LangGraph)
+   Thought: what do I need?
+   Action: call search_knowledge_base("X")
+   Observation: [results]
+   Thought: I still need Y...
+   repeat until stop
+
+─────────────────────────────────────────
+CODE PATTERN (LangGraph)
+─────────────────────────────────────────
+
+from langgraph.prebuilt import create_react_agent
+from langchain_core.tools import tool
+
+@tool
+def search_knowledge_base(query: str) -> str:
+    '''Search documents for relevant info.'''
+    docs = retriever.invoke(query)
+    return "\n".join([d.page_content for d in docs])
+
+agent = create_react_agent(llm, [search_knowledge_base])
+result = agent.invoke({"messages": [HumanMessage(content=question)]})
+
+─────────────────────────────────────────
+AGENTIC VS STANDARD RAG
+─────────────────────────────────────────
+
+Standard RAG:
+  1 query → retrieve → answer
+  Fast. Predictable. Fails on multi-hop questions.
+
+Agentic RAG:
+  Plan → retrieve(s) → evaluate → refine → answer
+  Slower. Flexible. Handles complex multi-part questions.
+
+─────────────────────────────────────────
+COMPARISON: SELF-RAG vs AGENTIC RAG
+─────────────────────────────────────────
+
+Self-RAG (010)   → LLM decides IF it needs retrieval (binary per token)
+Agentic RAG      → LLM decides HOW MANY times to retrieve and WHAT to search
+CRAG (013)       → retrieves once, then corrects bad docs with web search
+Agentic RAG      → may retrieve many times, plans queries from scratch

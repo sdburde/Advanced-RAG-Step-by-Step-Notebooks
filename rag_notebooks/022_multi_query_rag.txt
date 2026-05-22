@@ -1,0 +1,76 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+022 — MULTI-QUERY RAG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS MULTI-QUERY RAG?
+  Generate N paraphrased versions of the user's query.
+  Retrieve for each. Merge results. Better recall than single query.
+  Also called RAG-Fusion when combined with RRF re-ranking.
+
+─────────────────────────────────────────
+THE PROBLEM
+─────────────────────────────────────────
+
+Single query misses chunks that use different vocabulary.
+"transformer context" won't retrieve a chunk that says "attention window".
+Multi-query covers more vocabulary space with one user question.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+query expansion      → generating more queries from the original one
+RAG-Fusion           → multi-query + RRF merging (Rackauckas 2023)
+RRF                  → Reciprocal Rank Fusion. score = Σ 1/(k + rank)
+                       k=60 is standard default
+deduplication        → remove same chunk returned by multiple queries
+MultiQueryRetriever  → LangChain built-in: from_llm(retriever, llm)
+recall               → fraction of relevant docs that were retrieved
+                       multi-query increases recall
+
+─────────────────────────────────────────
+PIPELINE
+─────────────────────────────────────────
+
+1. User query → LLM generates 3-5 paraphrased variants
+2. Retrieve top-k chunks for EACH variant
+3. Deduplicate (same chunk from multiple queries = one entry)
+4. RRF re-rank: score = sum of 1/(60 + rank) across all query lists
+5. Take top-k fused results → LLM generates answer
+
+─────────────────────────────────────────
+RRF FORMULA
+─────────────────────────────────────────
+
+score(doc) = Σ  1 / (k + rank_i(doc))
+              i
+
+  k         = 60 (constant, prevents rank-1 dominating)
+  rank_i    = position of doc in the i-th query result list
+  A doc appearing in multiple lists gets a higher combined score
+
+─────────────────────────────────────────
+CODE PATTERNS
+─────────────────────────────────────────
+
+# LangChain built-in
+from langchain.retrievers.multi_query import MultiQueryRetriever
+retriever = MultiQueryRetriever.from_llm(base_retriever, llm)
+
+# Manual RRF
+def rrf(query_results, k=60):
+    scores = {}
+    for results in query_results:
+        for rank, doc in enumerate(results):
+            key = doc.page_content[:80]
+            scores[key] = scores.get(key, 0) + 1 / (k + rank + 1)
+    return sorted(scores, key=scores.get, reverse=True)
+
+─────────────────────────────────────────
+TRADEOFFS
+─────────────────────────────────────────
+
++ Better recall (fewer missed relevant chunks)
++ Covers synonym and paraphrase gaps
+- N extra LLM calls for query generation (cheap, fast)
+- N × more retrieval calls (fast if vector DB is local)

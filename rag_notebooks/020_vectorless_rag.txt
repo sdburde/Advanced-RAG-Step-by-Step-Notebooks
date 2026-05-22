@@ -1,0 +1,76 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+020 — VECTORLESS RAG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS VECTORLESS RAG?
+  Full RAG pipeline with NO embedding model and NO vector database.
+  Retrieval is done with BM25 or TF-IDF (pure keyword/frequency math).
+  Generation is still an LLM. Only the retrieval step changes.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+vectorless RAG  → RAG where retrieval = keyword scoring only, no float vectors
+BM25            → Best Match 25. Keyword scorer used by Elasticsearch / Lucene
+TF-IDF          → Term Frequency × Inverse Document Frequency. Simpler baseline
+sparse vector   → a vector where most values are 0 (one slot per vocabulary word)
+dense vector    → embedding vector where most values are non-zero floats
+inverted index  → for each word → list of docs that contain it
+tokenize        → split text to words, lowercase, strip punctuation
+
+─────────────────────────────────────────
+VECTORLESS RAG PIPELINE
+─────────────────────────────────────────
+
+1. CHUNK     → split documents into passages (same as vector RAG)
+2. TOKENIZE  → lowercase + strip punctuation each chunk
+3. INDEX     → BM25Okapi(tokenized_chunks) builds the inverted index
+4. QUERY     → tokenize query → bm25.get_scores(tokens) → top-k by score
+5. GENERATE  → paste top-k chunks into prompt → LLM answers
+
+No embedding step. No vector DB step.
+
+─────────────────────────────────────────
+BM25 vs TF-IDF
+─────────────────────────────────────────
+
+TF-IDF  → cosine similarity on sparse vectors. sklearn TfidfVectorizer.
+BM25    → BM25 with saturation + length penalty. Better than TF-IDF.
+          rank_bm25: BM25Okapi(corpus) then get_scores(query_tokens)
+
+─────────────────────────────────────────
+WHEN TO USE VECTORLESS RAG
+─────────────────────────────────────────
+
+Use when:
+  - No GPU or heavy model hosting budget
+  - Queries use exact product names, codes, version numbers, dates
+  - Response time matters more than semantic understanding
+  - Simple FAQ / keyword matching is enough
+
+Don't use when:
+  - Queries are paraphrased or use synonyms
+  - Semantic meaning matters ("car" must match "automobile")
+  - You need conceptual answers, not just keyword matches
+
+─────────────────────────────────────────
+CODE PATTERN
+─────────────────────────────────────────
+
+from rank_bm25 import BM25Okapi
+
+tokenized = [text.lower().split() for text in chunks]
+bm25 = BM25Okapi(tokenized)
+
+def retrieve(query, top_k=5):
+    scores = bm25.get_scores(query.lower().split())
+    idx = scores.argsort()[-top_k:][::-1]
+    return [(chunks[i], scores[i]) for i in idx]
+
+─────────────────────────────────────────
+RULE OF THUMB
+─────────────────────────────────────────
+
+Use vectorless RAG for prototypes or exact-match domains.
+For production: upgrade to hybrid (BM25 + dense) — see notebook 006.

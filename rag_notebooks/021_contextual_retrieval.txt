@@ -1,0 +1,73 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+021 — CONTEXTUAL RETRIEVAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS CONTEXTUAL RETRIEVAL?
+  Anthropic (2024) technique. Before indexing, use an LLM to write a
+  short context description for each chunk. Prepend it to the chunk.
+  Improves BM25 retrieval by 49% and embedding retrieval by 35%.
+
+─────────────────────────────────────────
+THE PROBLEM IT SOLVES
+─────────────────────────────────────────
+
+Without context, a chunk might say:
+  "It can be applied to reduce hallucination in LLMs."
+  → What is "it"? BM25 and embeddings don't know.
+
+With contextual retrieval, that chunk becomes:
+  "This passage discusses Retrieval-Augmented Generation (RAG) and its
+   benefits for reducing hallucination in language models.
+   It can be applied to reduce hallucination in LLMs."
+  → Now retrieval finds it for any related query.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+contextual chunk    → original chunk prepended with LLM-generated context
+context description → 1-2 sentences: "This chunk discusses X in the context of Y"
+prompt caching      → reuse the full document in the prompt across all chunk calls
+                      cuts the indexing cost by ~80%
+index-time cost     → one LLM call per chunk, paid once at build time
+query-time cost     → zero extra cost vs standard RAG
+
+─────────────────────────────────────────
+PIPELINE
+─────────────────────────────────────────
+
+Standard RAG:
+  chunk → embed/index → done
+
+Contextual Retrieval:
+  chunk → LLM("what is this chunk about in the full doc?")
+        → prepend context to chunk
+        → embed/index enriched chunk → done
+
+─────────────────────────────────────────
+PROMPT PATTERN
+─────────────────────────────────────────
+
+"Here is the full document: {document}
+ Here is a chunk: {chunk}
+ Write a 1-2 sentence context description for this chunk
+ within the full document. Output ONLY the context."
+
+─────────────────────────────────────────
+RESULTS (ANTHROPIC 2024)
+─────────────────────────────────────────
+
+Method                        Retrieval failure
+─────────────────────────────────────────
+Standard BM25                 → baseline
+Contextual BM25               → 49% fewer failures
+Standard embeddings           → baseline
+Contextual embeddings         → 35% fewer failures
+Contextual embeddings + BM25  → 67% fewer failures (best)
+
+─────────────────────────────────────────
+RULE OF THUMB
+─────────────────────────────────────────
+
+Use contextual retrieval when chunk quality is the bottleneck.
+Combine with hybrid search (BM25 + dense) for best results.
