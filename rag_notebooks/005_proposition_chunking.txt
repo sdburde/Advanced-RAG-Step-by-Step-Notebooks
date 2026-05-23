@@ -1,0 +1,73 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+030 — PROPOSITION-BASED CHUNKING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS PROPOSITION CHUNKING?
+  Dense X Retrieval (Chen et al. 2023). Use an LLM to split each text chunk
+  into ATOMIC PROPOSITIONS — minimal, self-contained factual statements.
+  Index one proposition per document instead of one paragraph per document.
+
+─────────────────────────────────────────
+THE PROBLEM WITH STANDARD CHUNKS
+─────────────────────────────────────────
+
+A 400-token chunk may contain 8 different facts.
+When you retrieve it for "what year was BERT released?", you get:
+  "BERT was created by Google in 2018. It uses transformer encoder.
+   Pre-trained on Wikipedia. Later models include RoBERTa and ALBERT..."
+  → 90% of the retrieved text is irrelevant to the question.
+
+Proposition chunking returns:
+  "BERT was released in 2018."
+  → 100% relevant. No noise.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+atomic proposition  → one minimal verifiable fact, fully self-contained
+                      "BERT was created by Google." ← atomic
+                      "It was created in 2018 and uses transformers." ← not atomic (two facts)
+pronoun resolution  → propositions must replace "it", "they", "this" with actual names
+Dense X Retrieval   → the paper that introduced proposition-based retrieval (Chen 2023)
+proposition density → avg propositions per standard chunk (typically 4-8)
+
+─────────────────────────────────────────
+PIPELINE
+─────────────────────────────────────────
+
+INDEX TIME:
+1. Standard chunking (500 chars) → base chunks
+2. LLM(chunk) → list of atomic propositions
+3. Embed each proposition as its own document
+4. Store in vector DB
+
+QUERY TIME:
+1. Embed query → find top-k proposition vectors
+2. Return matched propositions as context to LLM
+
+─────────────────────────────────────────
+PROMPT PATTERN
+─────────────────────────────────────────
+
+"Decompose the text into atomic propositions.
+ Rules:
+ - One fact per line
+ - Each must be self-contained (resolve pronouns)
+ - No numbering or bullets
+ Text: {text}
+ Propositions:"
+
+─────────────────────────────────────────
+TRADEOFFS
+─────────────────────────────────────────
+
++ Higher retrieval precision
++ Less noise in LLM context
++ Better factoid QA accuracy
+- 1 LLM call per chunk at index time
+- 5-8x more vectors to store and search
+- Slower indexing
+
+Best for: factual QA, technical manuals, knowledge bases
+Not ideal for: summarization, long narrative documents

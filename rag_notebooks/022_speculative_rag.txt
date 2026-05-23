@@ -1,0 +1,53 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+028 — SPECULATIVE RAG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS SPECULATIVE RAG?
+  Google (2024). Partition retrieved docs into K subsets.
+  Small LLM generates K draft answers in parallel (one per subset).
+  Large LLM reads the K short drafts (not the full docs) and synthesizes.
+  Result: 12.97% accuracy gain + 51% latency reduction (PubHealth benchmark).
+
+─────────────────────────────────────────
+INSPIRATION
+─────────────────────────────────────────
+
+Speculative Decoding: small model generates draft tokens → large model verifies.
+Speculative RAG: same idea applied to retrieval + generation.
+  Small LM  = cheap drafter (one draft per document cluster)
+  Large LM  = expensive verifier (reads only compact drafts)
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+drafter           → small/fast LLM that writes draft answers per subset
+verifier          → large/accurate LLM that reads drafts and synthesizes
+partition         → split retrieved docs into K subsets by content cluster
+KMeans clustering → group docs by embedding similarity for partitioning
+parallel drafting → K draft calls run concurrently (production: asyncio/threads)
+context reduction → verifier reads K×(draft_length) instead of N×(chunk_length)
+
+─────────────────────────────────────────
+PIPELINE
+─────────────────────────────────────────
+
+1. RETRIEVE    → get top-N docs (e.g. N=8)
+2. PARTITION   → KMeans(n=K) on doc embeddings → K subsets
+3. DRAFT       → small_LLM(subset_i + question) → draft_i  [run K in parallel]
+4. VERIFY      → large_LLM(drafts_1..K + question) → final answer
+
+─────────────────────────────────────────
+WHY LARGE LLM READS LESS
+─────────────────────────────────────────
+
+Standard: large_LLM reads N chunks × 400 tokens = 3200 tokens
+Speculative: large_LLM reads K drafts × 100 tokens = 400 tokens
+  → 87% token reduction for the expensive model
+
+─────────────────────────────────────────
+PAPER
+─────────────────────────────────────────
+
+"Speculative RAG: Enhancing Retrieval Augmented Generation through Drafting"
+Google Research, 2024. arxiv.org/abs/2407.08223

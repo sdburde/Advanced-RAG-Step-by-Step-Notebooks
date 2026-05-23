@@ -1,0 +1,61 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+026 — LATE CHUNKING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS LATE CHUNKING?
+  Jina AI (2024). Embed the FULL document first to get token-level
+  embeddings, THEN apply chunk boundaries by mean-pooling the tokens
+  in each chunk. Each chunk vector retains full-document context.
+
+─────────────────────────────────────────
+THE PROBLEM WITH STANDARD CHUNKING
+─────────────────────────────────────────
+
+Standard: chunk text → embed each chunk independently
+  Problem: "It reduces hallucination" — what is "it"?
+  The embedding model only sees the chunk, not the rest of the document.
+  Pronouns and references lose their meaning.
+
+Late chunking: embed full doc → pool token embeddings per chunk
+  Each chunk's embedding was computed with full document context.
+  "It" is now grounded because surrounding sentences were in the same forward pass.
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+token embeddings    → per-token float vectors from transformer last hidden state
+mean pooling        → average all token vectors in a span → one chunk vector
+chunked pooling     → same as late chunking (Jina's alternate name)
+long-context model  → needed because full doc must fit in one forward pass
+                      jina-embeddings-v2-base-en: 8192 tokens
+                      all-MiniLM-L6-v2: 512 tokens (too short for most docs)
+
+─────────────────────────────────────────
+PIPELINE
+─────────────────────────────────────────
+
+Standard:
+  chunk_i  →  embed(chunk_i)  →  vec_i
+
+Late chunking:
+  full_doc  →  tokenize  →  transformer forward pass
+           →  token_embeddings[0..N]
+           →  mean_pool(tokens[start_i : end_i])  →  vec_i
+
+─────────────────────────────────────────
+COMPARISON
+─────────────────────────────────────────
+
+                    Context preserved?  LLM calls?  GPU needed?
+Standard chunking       NO               0           no
+Contextual retrieval    YES              1 per chunk  no
+Late chunking           YES              0            no (but long-context model)
+
+─────────────────────────────────────────
+RECOMMENDED MODEL
+─────────────────────────────────────────
+
+pip install transformers
+model = "jinaai/jina-embeddings-v2-base-en"  # 8192 token window
+Encoder only. Trust remote code: trust_remote_code=True

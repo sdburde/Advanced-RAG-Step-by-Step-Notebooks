@@ -1,0 +1,65 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+027 — SELF-QUERYING RAG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHAT IS SELF-QUERYING RAG?
+  LangChain SelfQueryRetriever. The LLM decomposes the user's query into
+  two parts: a SEMANTIC query (for vector search) and a STRUCTURED FILTER
+  (for metadata). Apply filter first, then search the filtered subset.
+
+─────────────────────────────────────────
+THE PROBLEM
+─────────────────────────────────────────
+
+"papers about transformers published after 2022"
+  Standard RAG embeds the whole query. It cannot enforce "after 2022".
+  Self-querying extracts year > 2022 as a Chroma filter, then searches "transformers".
+
+─────────────────────────────────────────
+KEYWORDS
+─────────────────────────────────────────
+
+SelfQueryRetriever → LangChain class that uses LLM to split query into semantic + filter
+AttributeInfo      → describes each metadata field: name, description, type
+structured filter  → Chroma/Pinecone native filter applied before vector search
+query constructor  → the LLM chain that generates the structured query
+document_contents  → one-sentence description of what the corpus contains
+filter operators   → eq, ne, gt, gte, lt, lte, and, or, not
+
+─────────────────────────────────────────
+PIPELINE
+─────────────────────────────────────────
+
+1. DEFINE   → AttributeInfo for each metadata field
+2. INIT     → SelfQueryRetriever.from_llm(llm, vectorstore, metadata_field_info)
+3. INVOKE   → retriever.invoke("NLP docs from 2023")
+              LLM generates:  query="NLP"  filter=year>=2023
+              Chroma: filter(year>=2023) → similarity_search("NLP", k=4)
+
+─────────────────────────────────────────
+CODE PATTERN
+─────────────────────────────────────────
+
+from langchain.chains.query_constructor.base import AttributeInfo
+from langchain.retrievers.self_query.base import SelfQueryRetriever
+
+field_info = [
+    AttributeInfo(name="year",  description="Publication year", type="integer"),
+    AttributeInfo(name="topic", description="Subject: AI, NLP, RAG", type="string"),
+]
+retriever = SelfQueryRetriever.from_llm(
+    llm, vectorstore, "AI/ML documents", field_info
+)
+docs = retriever.invoke("advanced RAG techniques from 2024")
+
+─────────────────────────────────────────
+WHEN TO USE
+─────────────────────────────────────────
+
+Use when:
+  Corpus has meaningful structured metadata (dates, categories, authors)
+  Users ask hybrid questions combining semantics + constraints
+
+Don't use when:
+  Corpus has no useful metadata
+  All queries are purely conceptual with no structured constraints
