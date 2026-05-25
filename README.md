@@ -51,6 +51,7 @@ cp .env.example .env
 | 27 | `027_semantic_cache.ipynb` | Skip LLM calls for similar questions |
 | 28 | `028_ragas_evaluation.ipynb` | Automated RAG quality metrics |
 | 29 | `029_hallucination_detection.ipynb` | Detect LLM fabrications via NLI |
+| 30 | `030_rag_observability.ipynb` | Trace and inspect every hop with LangSmith and Arize Phoenix |
 
 Each notebook has a companion `.txt` file with theory and glossary.
 
